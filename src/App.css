@@ -1,0 +1,344 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #080d18;
+  color: #ffffff;
+  font-family: Arial, sans-serif;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.app {
+  min-height: 100vh;
+  background: #080d18;
+}
+
+.topo {
+  height: 75px;
+  padding: 0 7%;
+  background: #101827;
+  border-bottom: 1px solid #1e3149;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.logo {
+  font-size: 25px;
+  font-weight: 900;
+  color: white;
+  letter-spacing: 1px;
+}
+
+.logo span {
+  color: #00aaff;
+}
+
+.topo nav {
+  display: flex;
+  gap: 12px;
+}
+
+.topo nav button {
+  background: transparent;
+  border: none;
+  color: #b9c7d9;
+  padding: 12px;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.topo nav button:hover {
+  color: #00aaff;
+}
+
+.status {
+  color: #18dc89;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.bolinha {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #18dc89;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+main {
+  max-width: 1250px;
+  margin: auto;
+  padding: 30px 25px;
+}
+
+.destaque {
+  min-height: 260px;
+  background: linear-gradient(120deg, #102b4c, #101827 65%, #063b62);
+  border: 1px solid #164d76;
+  border-radius: 18px;
+  padding: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.etiqueta {
+  color: #00b7ff;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 3px;
+}
+
+.destaque h1 {
+  font-size: clamp(27px, 4vw, 43px);
+  margin: 17px 0;
+}
+
+.destaque h1 span {
+  color: #00aaff;
+}
+
+.destaque p {
+  color: #b8c9da;
+  margin-bottom: 25px;
+}
+
+.botao {
+  background: #008fe0;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 22px;
+  font-weight: bold;
+}
+
+.botao:hover {
+  background: #00b7ff;
+}
+
+.icone-tv {
+  font-size: 105px;
+  filter: drop-shadow(0 0 25px #008fff);
+}
+
+.player-area {
+  margin-top: 30px;
+}
+
+.player {
+  min-height: 310px;
+  border-radius: 15px;
+  border: 1px solid #1c3855;
+  background: radial-gradient(circle, #142943, #050911 75%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 25px;
+}
+
+.play-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: #008fe0;
+  font-size: 25px;
+  box-shadow: 0 0 30px #008fe077;
+}
+
+.player-info h2 {
+  margin-top: 18px;
+  font-size: 23px;
+}
+
+.player-info p {
+  color: #a9bacd;
+  margin-top: 10px;
+  max-width: 450px;
+  line-height: 1.6;
+}
+
+.conteudo {
+  margin-top: 45px;
+}
+
+.titulo h2 {
+  font-size: 25px;
+}
+
+.titulo p {
+  color: #8294a9;
+  margin-top: 7px;
+}
+
+.pesquisa {
+  margin-top: 25px;
+  width: 100%;
+  padding: 15px;
+  background: #101827;
+  border: 1px solid #243b55;
+  border-radius: 9px;
+  color: white;
+  outline: none;
+  font-size: 14px;
+}
+
+.pesquisa:focus {
+  border-color: #00aaff;
+}
+
+.filtros {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.filtros button {
+  background: #142237;
+  border: 1px solid #243c57;
+  color: #b9c7d9;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+.filtros button.ativo {
+  background: #008fe0;
+  border-color: #008fe0;
+  color: white;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.card {
+  background: #101827;
+  border: 1px solid #1e344d;
+  border-radius: 13px;
+  padding: 22px;
+  text-align: left;
+  color: white;
+  transition: 0.25s;
+}
+
+.card:hover,
+.card.selecionado {
+  border-color: #00aaff;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px #008fff22;
+}
+
+.card-icone {
+  font-size: 35px;
+}
+
+.card h3 {
+  margin: 15px 0 8px;
+  font-size: 18px;
+}
+
+.card-categoria {
+  display: inline-block;
+  color: #00b7ff;
+  font-size: 12px;
+}
+
+.assistir {
+  display: block;
+  margin-top: 20px;
+  color: #b8c9da;
+  font-size: 13px;
+}
+
+.vazio {
+  color: #9baabd;
+  padding: 20px 0;
+}
+
+footer {
+  margin-top: 60px;
+  padding: 30px 20px;
+  background: #101827;
+  border-top: 1px solid #1e3149;
+  text-align: center;
+}
+
+footer p {
+  color: #8294a9;
+  font-size: 12px;
+  margin-top: 12px;
+}
+
+@media (max-width: 750px) {
+  .topo {
+    height: auto;
+    min-height: 75px;
+    padding: 18px;
+    flex-wrap: wrap;
+  }
+
+  .topo nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .topo nav button {
+    padding: 9px;
+  }
+
+  main {
+    padding: 20px 15px;
+  }
+
+  .destaque {
+    padding: 25px;
+    min-height: 220px;
+  }
+
+  .icone-tv {
+    font-size: 55px;
+  }
+
+  .grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .player {
+    min-height: 230px;
+  }
+}
+
+@media (max-width: 400px) {
+  .grade {
+    grid-template-columns: 1fr;
+  }
+
+  .icone-tv {
+    display: none;
+  }
+}
