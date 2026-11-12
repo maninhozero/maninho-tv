@@ -21,25 +21,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar código
+      - name: Baixar codigo
         uses: actions/checkout@v4
 
-      - name: Configurar Node.js
+      - name: Configurar Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Instalar dependências
+      - name: Instalar dependencias
         run: npm ci
 
-      - name: Gerar versão do site
+      - name: Gerar versao do site
         run: npm run build
+        env:
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
-      - name: Configurar GitHub Pages
+      - name: Configurar Pages
         uses: actions/configure-pages@v5
 
-      - name: Enviar arquivos do site
+      - name: Enviar arquivos
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
