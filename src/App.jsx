@@ -15,6 +15,36 @@ const formularioVazio = {
   stream_url: ""
 };
 
+const formularioJogoVazio = {
+  titulo: "",
+  campeonato: "",
+  data_jogo: "",
+  horario: "",
+  canal_id: "",
+  time_casa: "",
+  escudo_casa_url: "",
+  time_visitante: "",
+  escudo_visitante_url: "",
+  ativo: true
+};
+
+function dataLocalHoje() {
+  const agora = new Date();
+
+  return [
+    agora.getFullYear(),
+    String(agora.getMonth() + 1).padStart(2, "0"),
+    String(agora.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function formatarData(data) {
+  if (!data) return "";
+
+  const [ano, mes, dia] = data.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+
 export default function App() {
   const [categoria, setCategoria] = useState("Todos");
   const [busca, setBusca] = useState("");
@@ -23,6 +53,16 @@ export default function App() {
   const [canaisBanco, setCanaisBanco] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erroBanco, setErroBanco] = useState("");
+
+  // PROGRAMACAO DE JOGOS
+  const [jogos, setJogos] = useState([]);
+  const [carregandoJogos, setCarregandoJogos] = useState(false);
+  const [formularioJogo, setFormularioJogo] = useState(
+    formularioJogoVazio
+  );
+  const [editandoJogo, setEditandoJogo] = useState(null);
+  const [salvandoJogo, setSalvandoJogo] = useState(false);
+  const [mensagemJogo, setMensagemJogo] = useState("");
 
   const [sessao, setSessao] = useState(null);
   const [modoRecuperacao, setModoRecuperacao] = useState(false);
@@ -58,6 +98,7 @@ export default function App() {
 
   useEffect(() => {
     carregarCanais();
+    carregarJogos();
 
     let ativo = true;
 
@@ -75,6 +116,7 @@ export default function App() {
         data.session?.user?.email?.toLowerCase() === EMAIL_ADMIN
       ) {
         setMostrarPainel(true);
+        carregarJogos();
       }
     });
 
@@ -117,6 +159,25 @@ export default function App() {
     }
 
     setCarregando(false);
+  }
+
+  async function carregarJogos() {
+    setCarregandoJogos(true);
+
+    const { data, error } = await supabase
+      .from("jogos")
+      .select("*")
+      .order("data_jogo", { ascending: true })
+      .order("horario", { ascending: true });
+
+    if (error) {
+      console.error("Erro ao carregar jogos:", error);
+      setJogos([]);
+    } else {
+      setJogos(data || []);
+    }
+
+    setCarregandoJogos(false);
   }
 
   async function copiarPix() {
@@ -232,10 +293,12 @@ export default function App() {
       await supabase.auth.signOut();
       setErroLogin("Conta sem permissão de administrador.");
     } else {
+      setSessao(data.session);
       setMostrarLogin(false);
       setMostrarPainel(true);
       setSenha("");
       setErroLogin("");
+      await carregarJogos();
     }
 
     setEntrando(false);
@@ -249,6 +312,8 @@ export default function App() {
     setMostrarLogin(false);
     setEditando(null);
     setFormulario(formularioVazio);
+    setEditandoJogo(null);
+    setFormularioJogo(formularioJogoVazio);
   }
 
   function abrirAcessoAdmin() {
@@ -401,6 +466,207 @@ export default function App() {
     await carregarCanais();
   }
 
+  // ==========================================
+  // GERENCIAMENTO DA PROGRAMACAO
+  // ==========================================
+
+  function atualizarFormularioJogo(e) {
+    const { name, value } = e.target;
+
+    setFormularioJogo((anterior) => ({
+      ...anterior,
+      [name]: value
+    }));
+  }
+
+  async function salvarJogo(e) {
+    e.preventDefault();
+    setMensagemJogo("");
+
+    if (!administrador) {
+      setMensagemJogo("Apenas o administrador pode cadastrar jogos.");
+      return;
+    }
+
+    if (
+      !formularioJogo.time_casa.trim() ||
+      !formularioJogo.time_visitante.trim() ||
+      !formularioJogo.data_jogo ||
+      !formularioJogo.horario ||
+      !formularioJogo.canal_id
+    ) {
+      setMensagemJogo(
+        "Preencha os times, a data, o horário e o canal."
+      );
+      return;
+    }
+
+    if (
+      formularioJogo.escudo_casa_url.trim() &&
+      !/^https?:\/\//i.test(formularioJogo.escudo_casa_url.trim())
+    ) {
+      setMensagemJogo(
+        "A URL do escudo da casa precisa começar com http:// ou https://."
+      );
+      return;
+    }
+
+    if (
+      formularioJogo.escudo_visitante_url.trim() &&
+      !/^https?:\/\//i.test(formularioJogo.escudo_visitante_url.trim())
+    ) {
+      setMensagemJogo(
+        "A URL do escudo visitante precisa começar com http:// ou https://."
+      );
+      return;
+    }
+
+    const canalExiste = canaisBanco.some(
+      (canal) =>
+        String(canal.id) === String(formularioJogo.canal_id)
+    );
+
+    if (!canalExiste) {
+      setMensagemJogo("Selecione um canal válido.");
+      return;
+    }
+
+    setSalvandoJogo(true);
+
+    const nomeCasa = formularioJogo.time_casa.trim();
+    const nomeVisitante = formularioJogo.time_visitante.trim();
+
+    const dados = {
+      titulo: `${nomeCasa} x ${nomeVisitante}`,
+      time_casa: nomeCasa,
+      escudo_casa_url:
+        formularioJogo.escudo_casa_url.trim() || null,
+      time_visitante: nomeVisitante,
+      escudo_visitante_url:
+        formularioJogo.escudo_visitante_url.trim() || null,
+      campeonato: formularioJogo.campeonato.trim() || null,
+      data_jogo: formularioJogo.data_jogo,
+      horario: formularioJogo.horario,
+      canal_id: String(formularioJogo.canal_id),
+      ativo: formularioJogo.ativo
+    };
+
+    let resultado;
+
+    if (editandoJogo) {
+      resultado = await supabase
+        .from("jogos")
+        .update(dados)
+        .eq("id", editandoJogo.id);
+    } else {
+      resultado = await supabase
+        .from("jogos")
+        .insert([dados]);
+    }
+
+    if (resultado.error) {
+      console.error(resultado.error);
+      setMensagemJogo(
+        "Erro ao salvar jogo: " + resultado.error.message
+      );
+    } else {
+      setMensagemJogo(
+        editandoJogo
+          ? "Jogo atualizado com sucesso!"
+          : "Jogo cadastrado com sucesso!"
+      );
+
+      setFormularioJogo(formularioJogoVazio);
+      setEditandoJogo(null);
+
+      await carregarJogos();
+    }
+
+    setSalvandoJogo(false);
+  }
+
+  function prepararEdicaoJogo(jogo) {
+    setEditandoJogo(jogo);
+
+    const partesTitulo = (jogo.titulo || "").split(" x ");
+
+    setFormularioJogo({
+      titulo: jogo.titulo || "",
+      campeonato: jogo.campeonato || "",
+      data_jogo: jogo.data_jogo || "",
+      horario: jogo.horario?.slice(0, 5) || "",
+      canal_id: String(jogo.canal_id || ""),
+      time_casa: jogo.time_casa || partesTitulo[0] || "",
+      escudo_casa_url: jogo.escudo_casa_url || "",
+      time_visitante: jogo.time_visitante || partesTitulo[1] || "",
+      escudo_visitante_url: jogo.escudo_visitante_url || "",
+      ativo: jogo.ativo !== false
+    });
+
+    setMensagemJogo("");
+  }
+
+  function cancelarEdicaoJogo() {
+    setEditandoJogo(null);
+    setFormularioJogo(formularioJogoVazio);
+    setMensagemJogo("");
+  }
+
+  async function excluirJogo(id) {
+    if (!administrador) return;
+
+    const confirmar = window.confirm(
+      "Deseja realmente excluir este jogo?"
+    );
+
+    if (!confirmar) return;
+
+    const { error } = await supabase
+      .from("jogos")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error(error);
+      setMensagemJogo("Erro ao excluir jogo: " + error.message);
+      return;
+    }
+
+    setMensagemJogo("Jogo excluído com sucesso!");
+
+    if (editandoJogo?.id === id) {
+      cancelarEdicaoJogo();
+    }
+
+    await carregarJogos();
+  }
+
+  function alternarPublicacaoJogo(jogo) {
+    const partesTitulo = (jogo.titulo || "").split(" x ");
+
+    setFormularioJogo({
+      titulo: jogo.titulo || "",
+      campeonato: jogo.campeonato || "",
+      data_jogo: jogo.data_jogo || "",
+      horario: jogo.horario?.slice(0, 5) || "",
+      canal_id: String(jogo.canal_id || ""),
+      time_casa: jogo.time_casa || partesTitulo[0] || "",
+      escudo_casa_url: jogo.escudo_casa_url || "",
+      time_visitante: jogo.time_visitante || partesTitulo[1] || "",
+      escudo_visitante_url: jogo.escudo_visitante_url || "",
+      ativo: !jogo.ativo
+    });
+
+    setEditandoJogo(jogo);
+    setMensagemJogo(
+      "Altere a publicação e clique em ATUALIZAR JOGO."
+    );
+  }
+
+  // ==========================================
+  // NAVEGACAO E CANAIS
+  // ==========================================
+
   function irParaDoacoes() {
     setMostrarLogin(false);
     setMostrarPainel(false);
@@ -446,7 +712,12 @@ export default function App() {
     return nomeCombina && categoriaCombina;
   });
 
-  // Seleciona o canal e leva automaticamente até o player.
+  const jogosDeHoje = jogos.filter(
+    (jogo) =>
+      jogo.ativo &&
+      jogo.data_jogo === dataLocalHoje()
+  );
+
   function assistirCanal(canal) {
     setSelecionado(canal);
 
@@ -458,7 +729,6 @@ export default function App() {
     }, 50);
   }
 
-  // Abre o endereço do canal em uma nova aba.
   function abrirCanalNovaAba(canal) {
     if (!canal.url) {
       window.alert("Este canal ainda não possui um link cadastrado.");
@@ -475,6 +745,10 @@ export default function App() {
     setMostrarPainel(false);
     setMostrarLogin(false);
   }
+
+  // ==========================================
+  // RECUPERACAO DE SENHA
+  // ==========================================
 
   if (modoRecuperacao) {
     return (
@@ -531,8 +805,13 @@ export default function App() {
     );
   }
 
+  // ==========================================
+  // SITE
+  // ==========================================
+
   return (
     <div className="app">
+
       <header className="topo">
         <div className="logo">
           <img
@@ -599,6 +878,9 @@ export default function App() {
       </header>
 
       <main>
+
+        {/* DESTAQUE PRINCIPAL */}
+
         <section className="destaque">
           <div>
             <span className="etiqueta">
@@ -624,7 +906,152 @@ export default function App() {
           <div className="icone-tv">📺</div>
         </section>
 
+        {/* JOGOS DE HOJE */}
+
+        <section className="conteudo agenda-jogos">
+
+          <div className="titulo">
+            <div>
+              <h2>⚽ Jogos de Hoje</h2>
+              <p>
+                Confira a programação esportiva do dia
+              </p>
+            </div>
+
+            <span className="etiqueta">
+              PROGRAMAÇÃO
+            </span>
+          </div>
+
+          {carregandoJogos && (
+            <p>Carregando programação...</p>
+          )}
+
+          {!carregandoJogos && jogosDeHoje.length > 0 && (
+            <div className="grade">
+
+              {jogosDeHoje.map((jogo) => {
+                const canal = canaisBanco.find(
+                  (item) =>
+                    String(item.id) === String(jogo.canal_id)
+                );
+
+                const partesTitulo = (jogo.titulo || "").split(" x ");
+                const timeCasa =
+                  jogo.time_casa || partesTitulo[0] || jogo.titulo;
+                const timeVisitante =
+                  jogo.time_visitante || partesTitulo[1] || "";
+
+                return (
+                  <div
+                    className="card jogo-card"
+                    key={jogo.id}
+                  >
+                    <span className="card-categoria">
+                      {jogo.campeonato || "FUTEBOL"}
+                    </span>
+
+                    <div className="confronto-jogo">
+
+                      <div className="time-jogo">
+                        {jogo.escudo_casa_url ? (
+                          <img
+                            src={jogo.escudo_casa_url}
+                            alt={`Escudo ${timeCasa}`}
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <span>⚽</span>
+                        )}
+
+                        <strong>{timeCasa}</strong>
+                      </div>
+
+                      <strong className="versus-jogo">
+                        VS
+                      </strong>
+
+                      <div className="time-jogo">
+                        {jogo.escudo_visitante_url ? (
+                          <img
+                            src={jogo.escudo_visitante_url}
+                            alt={`Escudo ${timeVisitante || "time visitante"}`}
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <span>⚽</span>
+                        )}
+
+                        <strong>
+                          {timeVisitante || "A definir"}
+                        </strong>
+                      </div>
+
+                    </div>
+
+                    <div className="horario-jogo">
+                      🕒 {jogo.horario?.slice(0, 5)}
+                    </div>
+
+                    <div className="canal-jogo">
+
+                      {canal?.logo_url ? (
+                        <img
+                          src={canal.logo_url}
+                          alt={canal.nome}
+                        />
+                      ) : (
+                        <span>📺</span>
+                      )}
+
+                      <span>
+                        {canal?.nome || "Canal não encontrado"}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="botao-assistir-card"
+                      disabled={!canal?.stream_url}
+                      onClick={() => {
+                        if (!canal?.stream_url) return;
+
+                        assistirCanal({
+                          id: `online-${canal.id}`,
+                          bancoId: canal.id,
+                          nome: canal.nome,
+                          categoria: canal.categoria,
+                          icone: canal.logo_url || "📺",
+                          url: canal.stream_url,
+                          online: true
+                        });
+                      }}
+                    >
+                      ▶ ASSISTIR AGORA
+                    </button>
+                  </div>
+                );
+              })}
+
+            </div>
+          )}
+
+          {!carregandoJogos && jogosDeHoje.length === 0 && (
+            <p className="vazio">
+              Nenhum jogo programado para hoje.
+            </p>
+          )}
+
+        </section>
+
+        {/* PLAYER */}
+
         <section className="player-area">
+
           {selecionado && (
             <div className="canal-acoes">
               <h2>{selecionado.nome}</h2>
@@ -643,6 +1070,7 @@ export default function App() {
           )}
 
           <div className="player">
+
             {selecionado?.url ? (
               <iframe
                 key={selecionado.id}
@@ -668,10 +1096,14 @@ export default function App() {
                 </p>
               </div>
             )}
+
           </div>
         </section>
 
+        {/* LISTA DE CANAIS */}
+
         <section className="conteudo">
+
           <div className="titulo">
             <div>
               <h2>Explore os canais</h2>
@@ -707,6 +1139,7 @@ export default function App() {
           )}
 
           <div className="grade">
+
             {filtrados.map((canal) => (
               <div
                 className={
@@ -715,6 +1148,7 @@ export default function App() {
                 }
                 key={canal.id}
               >
+
                 <span className="card-icone">
                   {canal.icone?.startsWith("http") ? (
                     <img
@@ -747,6 +1181,7 @@ export default function App() {
                     marginTop: "12px"
                   }}
                 >
+
                   <button
                     type="button"
                     className="botao-assistir-card"
@@ -789,9 +1224,11 @@ export default function App() {
                   >
                     ↗ ABRIR EM OUTRA ABA
                   </button>
+
                 </div>
               </div>
             ))}
+
           </div>
 
           {filtrados.length === 0 && !carregando && (
@@ -799,9 +1236,13 @@ export default function App() {
               Nenhum canal encontrado.
             </p>
           )}
+
         </section>
 
+        {/* AREA ADMINISTRATIVA */}
+
         <section className="area-admin">
+
           {mostrarLogin && !administrador && (
             <form
               className="painel-admin"
@@ -861,13 +1302,17 @@ export default function App() {
 
           {administrador && mostrarPainel && (
             <div className="painel-admin">
+
               <h2>⚙️ Painel administrativo</h2>
 
               <p>
-                Gerencie os canais do MANINHO TV.
+                Gerencie os canais e a programação do MANINHO TV.
               </p>
 
+              {/* CADASTRO DE CANAIS */}
+
               <form onSubmit={salvarCanal}>
+
                 <h3>
                   {editando
                     ? "✏️ Editando canal"
@@ -923,8 +1368,7 @@ export default function App() {
                         e.currentTarget.style.display = "none";
                       }}
                       onLoad={(e) => {
-                        e.currentTarget.style.display =
-                          "inline-block";
+                        e.currentTarget.style.display = "inline-block";
                       }}
                       style={{
                         width: "90px",
@@ -968,6 +1412,7 @@ export default function App() {
                     CANCELAR EDIÇÃO
                   </button>
                 )}
+
               </form>
 
               {mensagem && (
@@ -976,7 +1421,10 @@ export default function App() {
                 </p>
               )}
 
+              {/* LISTA DE CANAIS ADMIN */}
+
               <div style={{ marginTop: "25px" }}>
+
                 <h3>
                   📺 Canais cadastrados ({canaisBanco.length})
                 </h3>
@@ -1023,6 +1471,7 @@ export default function App() {
                         borderRadius: "10px"
                       }}
                     >
+
                       {canal.logo_url ? (
                         <img
                           src={canal.logo_url}
@@ -1070,9 +1519,334 @@ export default function App() {
                       >
                         🗑️ Excluir
                       </button>
+
                     </div>
                   ))
                 )}
+
+              </div>
+
+              {/* PROGRAMACAO DE JOGOS NO ADMIN */}
+
+              <div className="admin-programacao">
+
+                <h3>⚽ Gerenciar jogos do dia</h3>
+
+                <p>
+                  Cadastre os confrontos, os escudos dos times e selecione
+                  um canal já existente no MANINHO TV.
+                </p>
+
+                <form onSubmit={salvarJogo}>
+
+                  <h3>
+                    {editandoJogo
+                      ? "✏️ Editando jogo"
+                      : "➕ Cadastrar novo jogo"}
+                  </h3>
+
+                  <label>Time da casa</label>
+
+                  <input
+                    name="time_casa"
+                    value={formularioJogo.time_casa}
+                    onChange={atualizarFormularioJogo}
+                    placeholder="Ex.: Flamengo"
+                    required
+                  />
+
+                  <label>URL do escudo do time da casa</label>
+
+                  <input
+                    name="escudo_casa_url"
+                    value={formularioJogo.escudo_casa_url}
+                    onChange={atualizarFormularioJogo}
+                    placeholder="https://site.com/escudo-flamengo.png"
+                  />
+
+                  {formularioJogo.escudo_casa_url.trim() && (
+                    <div className="preview-escudo">
+                      <p>Pré-visualização do escudo da casa</p>
+
+                      <img
+                        src={formularioJogo.escudo_casa_url}
+                        alt="Escudo do time da casa"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                        onLoad={(e) => {
+                          e.currentTarget.style.display = "inline-block";
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  <label>Time visitante</label>
+
+                  <input
+                    name="time_visitante"
+                    value={formularioJogo.time_visitante}
+                    onChange={atualizarFormularioJogo}
+                    placeholder="Ex.: Palmeiras"
+                    required
+                  />
+
+                  <label>URL do escudo do time visitante</label>
+
+                  <input
+                    name="escudo_visitante_url"
+                    value={formularioJogo.escudo_visitante_url}
+                    onChange={atualizarFormularioJogo}
+                    placeholder="https://site.com/escudo-palmeiras.png"
+                  />
+
+                  {formularioJogo.escudo_visitante_url.trim() && (
+                    <div className="preview-escudo">
+                      <p>Pré-visualização do escudo visitante</p>
+
+                      <img
+                        src={formularioJogo.escudo_visitante_url}
+                        alt="Escudo do time visitante"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                        onLoad={(e) => {
+                          e.currentTarget.style.display = "inline-block";
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  <label>Campeonato</label>
+
+                  <input
+                    name="campeonato"
+                    value={formularioJogo.campeonato}
+                    onChange={atualizarFormularioJogo}
+                    placeholder="Ex.: Brasileirão"
+                  />
+
+                  <label>Data do jogo</label>
+
+                  <input
+                    type="date"
+                    name="data_jogo"
+                    value={formularioJogo.data_jogo}
+                    onChange={atualizarFormularioJogo}
+                    required
+                  />
+
+                  <label>Horário</label>
+
+                  <input
+                    type="time"
+                    name="horario"
+                    value={formularioJogo.horario}
+                    onChange={atualizarFormularioJogo}
+                    required
+                  />
+
+                  <label>Canal da transmissão</label>
+
+                  <select
+                    name="canal_id"
+                    value={formularioJogo.canal_id}
+                    onChange={atualizarFormularioJogo}
+                    required
+                  >
+                    <option value="">
+                      Selecione um canal
+                    </option>
+
+                    {canaisBanco.map((canal) => (
+                      <option
+                        key={canal.id}
+                        value={String(canal.id)}
+                      >
+                        {canal.nome}
+                      </option>
+                    ))}
+                  </select>
+
+                  {canaisBanco.length === 0 && (
+                    <p className="mensagem-erro">
+                      Cadastre pelo menos um canal antes de cadastrar jogos.
+                    </p>
+                  )}
+
+                  <label className="publicar-jogo">
+                    <input
+                      type="checkbox"
+                      checked={formularioJogo.ativo}
+                      onChange={(e) =>
+                        setFormularioJogo((anterior) => ({
+                          ...anterior,
+                          ativo: e.target.checked
+                        }))
+                      }
+                    />
+
+                    Publicar jogo na página inicial
+                  </label>
+
+                  <button
+                    className="botao"
+                    type="submit"
+                    disabled={salvandoJogo || canaisBanco.length === 0}
+                  >
+                    {salvandoJogo
+                      ? "SALVANDO..."
+                      : editandoJogo
+                      ? "ATUALIZAR JOGO"
+                      : "CADASTRAR JOGO"}
+                  </button>
+
+                  {editandoJogo && (
+                    <button
+                      type="button"
+                      className="botao-admin"
+                      onClick={cancelarEdicaoJogo}
+                    >
+                      CANCELAR EDIÇÃO
+                    </button>
+                  )}
+
+                </form>
+
+                {mensagemJogo && (
+                  <p className="mensagem-jogo">
+                    {mensagemJogo}
+                  </p>
+                )}
+
+                <div className="lista-jogos-admin">
+
+                  <h3>
+                    📅 Jogos cadastrados ({jogos.length})
+                  </h3>
+
+                  {carregandoJogos && (
+                    <p>Carregando jogos...</p>
+                  )}
+
+                  {!carregandoJogos && jogos.length === 0 && (
+                    <p className="vazio">
+                      Nenhum jogo cadastrado.
+                    </p>
+                  )}
+
+                  {jogos.map((jogo) => {
+                    const canal = canaisBanco.find(
+                      (item) =>
+                        String(item.id) === String(jogo.canal_id)
+                    );
+
+                    const partesTitulo = (jogo.titulo || "").split(" x ");
+                    const timeCasa =
+                      jogo.time_casa || partesTitulo[0] || jogo.titulo;
+                    const timeVisitante =
+                      jogo.time_visitante || partesTitulo[1] || "";
+
+                    return (
+                      <div
+                        key={jogo.id}
+                        className="admin-jogo"
+                      >
+
+                        <div className="admin-jogo-info">
+
+                          <div className="admin-confronto">
+
+                            {jogo.escudo_casa_url && (
+                              <img
+                                src={jogo.escudo_casa_url}
+                                alt={`Escudo ${timeCasa}`}
+                                onError={(e) => {
+                                  e.currentTarget.style.display = "none";
+                                }}
+                              />
+                            )}
+
+                            <strong>
+                              {timeCasa}
+                              {timeVisitante
+                                ? ` x ${timeVisitante}`
+                                : ""}
+                            </strong>
+
+                            {jogo.escudo_visitante_url && (
+                              <img
+                                src={jogo.escudo_visitante_url}
+                                alt={`Escudo ${timeVisitante}`}
+                                onError={(e) => {
+                                  e.currentTarget.style.display = "none";
+                                }}
+                              />
+                            )}
+
+                          </div>
+
+                          <p>
+                            {jogo.campeonato || "Sem campeonato"}
+                          </p>
+
+                          <p>
+                            📅 {formatarData(jogo.data_jogo)}
+                            {" · "}
+                            🕒 {jogo.horario?.slice(0, 5)}
+                          </p>
+
+                          <p>
+                            📺 {canal?.nome || "Canal não encontrado"}
+                          </p>
+
+                          <span
+                            className={
+                              jogo.ativo
+                                ? "status-jogo publicado"
+                                : "status-jogo oculto"
+                            }
+                          >
+                            {jogo.ativo
+                              ? "PUBLICADO"
+                              : "OCULTO"}
+                          </span>
+
+                        </div>
+
+                        <div className="admin-jogo-acoes">
+
+                          <button
+                            type="button"
+                            onClick={() => prepararEdicaoJogo(jogo)}
+                          >
+                            ✏️ Editar
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => alternarPublicacaoJogo(jogo)}
+                          >
+                            {jogo.ativo
+                              ? "👁️ Ocultar"
+                              : "👁️ Publicar"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => excluirJogo(jogo.id)}
+                          >
+                            🗑️ Excluir
+                          </button>
+
+                        </div>
+
+                      </div>
+                    );
+                  })}
+
+                </div>
+
               </div>
 
               <button
@@ -1082,12 +1856,18 @@ export default function App() {
               >
                 SAIR DO PAINEL
               </button>
+
             </div>
           )}
+
         </section>
 
+        {/* APOIE O SITE */}
+
         <section className="apoie" id="apoie">
+
           <div className="apoie-conteudo">
+
             <span className="apoie-icone">❤️</span>
 
             <h2>Ajude a manter o MANINHO TV!</h2>
@@ -1098,6 +1878,7 @@ export default function App() {
             </p>
 
             <div className="pix-caixa">
+
               <span>CHAVE PIX</span>
 
               <strong>{CHAVE_PIX}</strong>
@@ -1120,17 +1901,23 @@ export default function App() {
                   ? "✓ CHAVE COPIADA!"
                   : "📋 COPIAR CHAVE PIX"}
               </button>
+
             </div>
 
             <p className="agradecimento">
               Obrigado por apoiar o MANINHO TV! 💙
             </p>
+
           </div>
+
         </section>
+
       </main>
 
       <footer>
+
         <div className="logo">
+
           <img
             src={logoSite}
             alt="Logo MANINHO TV"
@@ -1146,12 +1933,15 @@ export default function App() {
           />
 
           <span>MANINHO</span> TV
+
         </div>
 
         <p>
           © 2026 MANINHO TV - Todos os direitos reservados.
         </p>
+
       </footer>
+
     </div>
   );
 }

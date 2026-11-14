@@ -651,3 +651,272 @@ footer p {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================
+   MANINHO TV - AGENDA DE JOGOS
+========================================== */
+
+.agenda-jogos {
+  margin-top: 25px;
+  margin-bottom: 30px;
+  padding: 20px;
+  border: 1px solid #1a3049;
+  border-radius: 14px;
+  background: #0c1420;
+}
+
+.agenda-jogos .titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.agenda-jogos .titulo h2 {
+  color: #ffffff;
+  font-size: 23px;
+  margin-bottom: 5px;
+}
+
+.agenda-jogos .titulo p {
+  color: #aab8c9;
+  font-size: 13px;
+}
+
+.agenda-jogos .etiqueta {
+  color: #00aaff;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.jogo-card {
+  border: 1px solid #17466b !important;
+  background: linear-gradient(145deg, #142338, #080f19) !important;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.jogo-card:hover {
+  transform: translateY(-3px);
+  border-color: #00aaff !important;
+}
+
+.jogo-card h3 {
+  margin: 14px 0;
+  color: #ffffff;
+  font-size: 19px;
+}
+
+.jogo-card .card-categoria {
+  color: #00aaff;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.horario-jogo {
+  color: #00aaff;
+  font-size: 19px;
+  font-weight: bold;
+  margin: 12px 0;
+}
+
+.canal-jogo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.canal-jogo img {
+  width: 35px;
+  height: 35px;
+  object-fit: contain;
+}
+
+.jogo-card .botao-assistir-card {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #00aaff;
+  color: #ffffff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.jogo-card .botao-assistir-card:hover {
+  background: #0088cc;
+}
+
+.jogo-card .botao-assistir-card:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   ADMINISTRACAO DA PROGRAMACAO
+========================================== */
+
+.admin-programacao {
+  margin-top: 35px;
+  padding-top: 25px;
+  border-top: 1px solid #26364b;
+}
+
+.admin-programacao h3 {
+  margin-bottom: 12px;
+}
+
+.admin-programacao > p {
+  color: #aab8c9;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.admin-programacao form {
+  padding: 18px;
+  border: 1px solid #26364b;
+  border-radius: 12px;
+  background: #101a29;
+}
+
+.admin-programacao label {
+  display: block;
+  margin: 14px 0 7px;
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.admin-programacao input,
+.admin-programacao select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #33465e;
+  border-radius: 8px;
+  background: #080f19;
+  color: #ffffff;
+  outline: none;
+}
+
+.admin-programacao input:focus,
+.admin-programacao select:focus {
+  border-color: #00aaff;
+}
+
+.admin-programacao .publicar-jogo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.admin-programacao .publicar-jogo input {
+  width: 18px;
+  height: 18px;
+  accent-color: #00aaff;
+}
+
+.mensagem-jogo {
+  margin: 15px 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #102a3e;
+  color: #ffffff;
+}
+
+.lista-jogos-admin {
+  margin-top: 25px;
+}
+
+.admin-jogo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 12px 0;
+  padding: 15px;
+  border: 1px solid #26364b;
+  border-radius: 10px;
+  background: #101a29;
+}
+
+.admin-jogo-info {
+  flex: 1;
+  min-width: 180px;
+}
+
+.admin-jogo-info strong {
+  color: #ffffff;
+}
+
+.admin-jogo-info p {
+  margin-top: 6px;
+  color: #aab8c9;
+  font-size: 12px;
+}
+
+.status-jogo {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.status-jogo.publicado {
+  background: #103c2c;
+  color: #5ce0a0;
+}
+
+.status-jogo.oculto {
+  background: #30343b;
+  color: #b9c0ca;
+}
+
+.admin-jogo-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.admin-jogo-acoes button {
+  padding: 9px 11px;
+  border: 1px solid #33465e;
+  border-radius: 7px;
+  background: #192638;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.admin-jogo-acoes button:hover {
+  border-color: #00aaff;
+}
+
+@media (max-width: 600px) {
+  .agenda-jogos {
+    padding: 14px;
+  }
+
+  .agenda-jogos .titulo h2 {
+    font-size: 19px;
+  }
+
+  .admin-jogo {
+    align-items: flex-start;
+  }
+
+  .admin-jogo-acoes {
+    width: 100%;
+  }
+
+  .admin-jogo-acoes button {
+    flex: 1;
+  }
+}
