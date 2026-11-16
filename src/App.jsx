@@ -28,6 +28,17 @@ const formularioJogoVazio = {
   ativo: true
 };
 
+// CONFIGURACOES DO SITE
+const configuracaoVazia = {
+  id: 1,
+  apk_url: "",
+  download_ativo: true,
+  tutorial_titulo: "Como usar o MANINHO TV",
+  tutorial_descricao: "Aprenda a utilizar nosso aplicativo.",
+  tutorial_url: "",
+  tutorial_ativo: true
+};
+
 function dataLocalHoje() {
   const agora = new Date();
 
@@ -43,6 +54,48 @@ function formatarData(data) {
 
   const [ano, mes, dia] = data.split("-");
   return `${dia}/${mes}/${ano}`;
+}
+
+// Converte links comuns do YouTube para o formato de incorporacao.
+function obterUrlVideo(url) {
+  if (!url) return "";
+
+  try {
+    const endereco = new URL(url);
+    const host = endereco.hostname.replace(/^www\./, "");
+
+    if (host === "youtu.be") {
+      const id = endereco.pathname.split("/").filter(Boolean)[0];
+      return id ? `https://www.youtube.com/embed/${id}` : "";
+    }
+
+    if (
+      host === "youtube.com" ||
+      host === "m.youtube.com" ||
+      host === "youtube-nocookie.com"
+    ) {
+      const id = endereco.searchParams.get("v");
+
+      if (id) {
+        return `https://www.youtube.com/embed/${id}`;
+      }
+
+      if (endereco.pathname.startsWith("/embed/")) {
+        return url;
+      }
+
+      if (endereco.pathname.startsWith("/shorts/")) {
+        const idShorts = endereco.pathname.split("/")[2];
+        return idShorts
+          ? `https://www.youtube.com/embed/${idShorts}`
+          : "";
+      }
+    }
+  } catch (error) {
+    console.error("Link de vídeo inválido:", error);
+  }
+
+  return "";
 }
 
 export default function App() {
@@ -63,6 +116,12 @@ export default function App() {
   const [editandoJogo, setEditandoJogo] = useState(null);
   const [salvandoJogo, setSalvandoJogo] = useState(false);
   const [mensagemJogo, setMensagemJogo] = useState("");
+
+  // CONFIGURACOES DE DOWNLOAD E TUTORIAL
+  const [configSite, setConfigSite] = useState(configuracaoVazia);
+  const [carregandoConfig, setCarregandoConfig] = useState(true);
+  const [salvandoConfig, setSalvandoConfig] = useState(false);
+  const [mensagemConfig, setMensagemConfig] = useState("");
 
   const [sessao, setSessao] = useState(null);
   const [modoRecuperacao, setModoRecuperacao] = useState(false);
@@ -99,6 +158,7 @@ export default function App() {
   useEffect(() => {
     carregarCanais();
     carregarJogos();
+    carregarConfiguracoesSite();
 
     let ativo = true;
 
@@ -178,6 +238,115 @@ export default function App() {
     }
 
     setCarregandoJogos(false);
+  }
+
+  // ==========================================
+  // CONFIGURACOES DO SITE
+  // ==========================================
+
+  async function carregarConfiguracoesSite() {
+    setCarregandoConfig(true);
+
+    const { data, error } = await supabase
+      .from("configuracoes_site")
+      .select("*")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Erro ao carregar configurações:", error);
+      setMensagemConfig(
+        "Não foi possível carregar as configurações do site."
+      );
+    } else if (data) {
+      setConfigSite({
+        ...configuracaoVazia,
+        ...data
+      });
+    }
+
+    setCarregandoConfig(false);
+  }
+
+  function atualizarConfigSite(e) {
+    const { name, value, type, checked } = e.target;
+
+    setConfigSite((anterior) => ({
+      ...anterior,
+      [name]: type === "checkbox" ? checked : value
+    }));
+  }
+
+  async function salvarConfiguracoesSite(e) {
+    e.preventDefault();
+    setMensagemConfig("");
+
+    if (!administrador) {
+      setMensagemConfig(
+        "Somente o administrador pode alterar essas configurações."
+      );
+      return;
+    }
+
+    const apkUrl = configSite.apk_url.trim();
+    const tutorialUrl = configSite.tutorial_url.trim();
+
+    if (apkUrl && !/^https?:\/\//i.test(apkUrl)) {
+      setMensagemConfig(
+        "O link do aplicativo precisa começar com http:// ou https://."
+      );
+      return;
+    }
+
+    if (
+      tutorialUrl &&
+      !/^https?:\/\//i.test(tutorialUrl)
+    ) {
+      setMensagemConfig(
+        "O link do tutorial precisa começar com http:// ou https://."
+      );
+      return;
+    }
+
+    setSalvandoConfig(true);
+
+    const dados = {
+      id: 1,
+      apk_url: apkUrl,
+      download_ativo: configSite.download_ativo,
+      tutorial_titulo:
+        configSite.tutorial_titulo.trim() ||
+        "Como usar o MANINHO TV",
+      tutorial_descricao:
+        configSite.tutorial_descricao.trim(),
+      tutorial_url: tutorialUrl,
+      tutorial_ativo: configSite.tutorial_ativo,
+      atualizado_em: new Date().toISOString()
+    };
+
+    const { error } = await supabase
+      .from("configuracoes_site")
+      .upsert(dados, { onConflict: "id" });
+
+    if (error) {
+      console.error("Erro ao salvar configurações:", error);
+      setMensagemConfig(
+        "Erro ao salvar configurações: " + error.message
+      );
+    } else {
+      setConfigSite({
+        ...configuracaoVazia,
+        ...dados
+      });
+
+      setMensagemConfig(
+        "Configurações do site salvas com sucesso!"
+      );
+
+      await carregarConfiguracoesSite();
+    }
+
+    setSalvandoConfig(false);
   }
 
   async function copiarPix() {
@@ -299,6 +468,7 @@ export default function App() {
       setSenha("");
       setErroLogin("");
       await carregarJogos();
+      await carregarConfiguracoesSite();
     }
 
     setEntrando(false);
@@ -718,6 +888,8 @@ export default function App() {
       jogo.data_jogo === dataLocalHoje()
   );
 
+  const urlVideoTutorial = obterUrlVideo(configSite.tutorial_url);
+
   function assistirCanal(canal) {
     setSelecionado(canal);
 
@@ -905,6 +1077,131 @@ export default function App() {
 
           <div className="icone-tv">📺</div>
         </section>
+
+        {/* DOWNLOAD DO APLICATIVO */}
+
+        {!carregandoConfig && configSite.download_ativo && (
+          <section
+            className="conteudo"
+            id="baixar-aplicativo"
+          >
+            <div
+              className="card"
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "20px",
+                padding: "25px",
+                border: "1px solid #ed3030",
+                background:
+                  "linear-gradient(135deg, #151b27, #24202a)"
+              }}
+            >
+              <div style={{ flex: "1", minWidth: "220px" }}>
+                <span className="etiqueta">
+                  APLICATIVO OFICIAL
+                </span>
+
+                <h2 style={{ marginTop: "12px" }}>
+                  📱 MANINHO TV no seu celular
+                </h2>
+
+                <p>
+                  Baixe nosso aplicativo e tenha acesso ao MANINHO TV
+                  diretamente no seu celular.
+                </p>
+              </div>
+
+              {configSite.apk_url ? (
+                <a
+                  href={configSite.apk_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="botao"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textDecoration: "none",
+                    minWidth: "190px",
+                    textAlign: "center"
+                  }}
+                >
+                  ⬇ BAIXAR APLICATIVO
+                </a>
+              ) : (
+                <span
+                  style={{
+                    opacity: 0.7,
+                    fontSize: "14px"
+                  }}
+                >
+                  Download em breve.
+                </span>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* TUTORIAL DO APLICATIVO */}
+
+        {!carregandoConfig && configSite.tutorial_ativo && (
+          <section
+            className="conteudo"
+            id="tutorial-aplicativo"
+          >
+            <div className="titulo">
+              <div>
+                <h2>
+                  🎬 {configSite.tutorial_titulo || "Como usar o MANINHO TV"}
+                </h2>
+
+                <p>
+                  {configSite.tutorial_descricao ||
+                    "Aprenda a utilizar nosso aplicativo."}
+                </p>
+              </div>
+
+              <span className="etiqueta">
+                TUTORIAL
+              </span>
+            </div>
+
+            {urlVideoTutorial ? (
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: "850px",
+                  margin: "20px auto",
+                  aspectRatio: "16 / 9",
+                  overflow: "hidden",
+                  borderRadius: "14px",
+                  border: "1px solid #26364b",
+                  background: "#080b10"
+                }}
+              >
+                <iframe
+                  src={urlVideoTutorial}
+                  title={configSite.tutorial_titulo || "Tutorial MANINHO TV"}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    border: "0"
+                  }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <p className="vazio">
+                Tutorial em vídeo em breve.
+              </p>
+            )}
+          </section>
+        )}
 
         {/* JOGOS DE HOJE */}
 
@@ -1306,8 +1603,173 @@ export default function App() {
               <h2>⚙️ Painel administrativo</h2>
 
               <p>
-                Gerencie os canais e a programação do MANINHO TV.
+                Gerencie os canais, a programação e as configurações
+                do MANINHO TV.
               </p>
+
+              {/* CONFIGURACOES DE DOWNLOAD E TUTORIAL */}
+
+              <div
+                style={{
+                  margin: "25px 0",
+                  padding: "20px",
+                  border: "1px solid #ed3030",
+                  borderRadius: "14px",
+                  background: "#111923"
+                }}
+              >
+                <h3>📱 Download do aplicativo e tutorial</h3>
+
+                <p>
+                  Configure o link de download do APK e o vídeo
+                  que aparecerão na página inicial.
+                </p>
+
+                {carregandoConfig && (
+                  <p>Carregando configurações...</p>
+                )}
+
+                <form onSubmit={salvarConfiguracoesSite}>
+
+                  <h3>⬇️ Área de download</h3>
+
+                  <label>Link direto do aplicativo APK</label>
+
+                  <input
+                    type="url"
+                    name="apk_url"
+                    value={configSite.apk_url}
+                    onChange={atualizarConfigSite}
+                    placeholder="https://seusite.com/maninho-tv.apk"
+                  />
+
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      margin: "15px 0"
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      name="download_ativo"
+                      checked={configSite.download_ativo}
+                      onChange={atualizarConfigSite}
+                      style={{
+                        width: "18px",
+                        height: "18px"
+                      }}
+                    />
+
+                    Mostrar área de download no site
+                  </label>
+
+                  <hr
+                    style={{
+                      border: "0",
+                      borderTop: "1px solid #344154",
+                      margin: "22px 0"
+                    }}
+                  />
+
+                  <h3>🎬 Área de tutorial</h3>
+
+                  <label>Título do tutorial</label>
+
+                  <input
+                    type="text"
+                    name="tutorial_titulo"
+                    value={configSite.tutorial_titulo}
+                    onChange={atualizarConfigSite}
+                    placeholder="Como usar o MANINHO TV"
+                  />
+
+                  <label>Descrição do tutorial</label>
+
+                  <textarea
+                    name="tutorial_descricao"
+                    value={configSite.tutorial_descricao}
+                    onChange={atualizarConfigSite}
+                    placeholder="Escreva uma explicação para os visitantes..."
+                    rows="4"
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "8px",
+                      resize: "vertical",
+                      fontFamily: "inherit",
+                      marginBottom: "12px"
+                    }}
+                  />
+
+                  <label>Link do vídeo do YouTube</label>
+
+                  <input
+                    type="url"
+                    name="tutorial_url"
+                    value={configSite.tutorial_url}
+                    onChange={atualizarConfigSite}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                  />
+
+                  <small
+                    style={{
+                      display: "block",
+                      opacity: 0.7,
+                      margin: "5px 0 15px"
+                    }}
+                  >
+                    Aceita links do YouTube, youtu.be e Shorts.
+                  </small>
+
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      margin: "15px 0"
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      name="tutorial_ativo"
+                      checked={configSite.tutorial_ativo}
+                      onChange={atualizarConfigSite}
+                      style={{
+                        width: "18px",
+                        height: "18px"
+                      }}
+                    />
+
+                    Mostrar tutorial no site
+                  </label>
+
+                  <button
+                    className="botao"
+                    type="submit"
+                    disabled={salvandoConfig || carregandoConfig}
+                  >
+                    {salvandoConfig
+                      ? "SALVANDO..."
+                      : "💾 SALVAR CONFIGURAÇÕES DO SITE"}
+                  </button>
+
+                  {mensagemConfig && (
+                    <p
+                      style={{
+                        marginTop: "15px",
+                        color: mensagemConfig.includes("sucesso")
+                          ? "#42d392"
+                          : "#ff7777"
+                      }}
+                    >
+                      {mensagemConfig}
+                    </p>
+                  )}
+
+                </form>
+              </div>
 
               {/* CADASTRO DE CANAIS */}
 
