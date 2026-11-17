@@ -1,7 +1,12 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Capacitor, registerPlugin } from "@capacitor/core";
+import { ScreenOrientation } from "@capacitor/screen-orientation";
 import { supabase } from "./supabase";
 import "./App.css";
+
+// Plugin Android registrado em MainActivity.java.
+const ImmersiveMode = registerPlugin("ImmersiveMode");
 
 const EMAIL_ADMIN = "maninhomaninho20182018@gmail.com";
 const CHAVE_PIX = "87981332269";
@@ -103,6 +108,14 @@ export default function App() {
   const [busca, setBusca] = useState("");
   const [selecionado, setSelecionado] = useState(null);
 
+  // CONTROLES DO PLAYER E TELA CHEIA
+  const playerRef = useRef(null);
+  const [telaCheia, setTelaCheia] = useState(false);
+  const telaCheiaRef = useRef(false);
+  telaCheiaRef.current = telaCheia;
+  const [mostrarBotaoVoltar, setMostrarBotaoVoltar] = useState(true);
+  const temporizadorVoltarRef = useRef(null);
+
   const [canaisBanco, setCanaisBanco] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erroBanco, setErroBanco] = useState("");
@@ -154,6 +167,198 @@ export default function App() {
 
   const logoSite = `${import.meta.env.BASE_URL}logo.png`;
   const imagemPix = `${import.meta.env.BASE_URL}pix.png`;
+
+  // Orientação e barras do sistema: no Android usamos o plugin nativo.
+  // No navegador, mantemos o plugin ScreenOrientation como alternativa.
+  async function ajustarOrientacaoTelaCheia(ativo) {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await ImmersiveMode.setOrientation({
+          orientation: ativo ? "landscape" : "unspecified"
+        });
+        return;
+      } catch (error) {
+        console.warn("Plugin nativo de orientação indisponível:", error);
+      }
+    }
+
+    try {
+      if (ativo) {
+        await ScreenOrientation.lock({ orientation: "landscape" });
+      } else {
+        await ScreenOrientation.unlock();
+      }
+    } catch (error) {
+      try {
+        const orientacao = window.screen?.orientation;
+
+        if (ativo && typeof orientacao?.lock === "function") {
+          await orientacao.lock("landscape");
+        } else if (!ativo && typeof orientacao?.unlock === "function") {
+          orientacao.unlock();
+        }
+      } catch (erroFallback) {
+        console.warn(
+          "Não foi possível alterar a orientação da tela:",
+          error,
+          erroFallback
+        );
+      }
+    }
+  }
+
+  async function ajustarBarrasAndroid(ativo) {
+    if (!Capacitor.isNativePlatform()) return;
+
+    try {
+      await ImmersiveMode.setEnabled({ enabled: ativo });
+    } catch (error) {
+      console.error("Não foi possível alterar as barras do Android:", error);
+    }
+  }
+
+  function atualizarClasseTelaCheia(ativo) {
+    document.documentElement.classList.toggle("modo-tela-cheia", ativo);
+    document.body.classList.toggle("modo-tela-cheia", ativo);
+  }
+
+  useEffect(() => {
+    function atualizarEstadoTelaCheia() {
+      // A tela cheia nativa do Android é controlada pelo estado React,
+      // não pela Fullscreen API do navegador.
+      if (Capacitor.isNativePlatform()) return;
+
+      const ativo =
+        document.fullscreenElement === playerRef.current ||
+        document.webkitFullscreenElement === playerRef.current;
+
+      telaCheiaRef.current = ativo;
+      setTelaCheia(ativo);
+      atualizarClasseTelaCheia(ativo);
+      ajustarOrientacaoTelaCheia(ativo);
+    }
+
+    function receberToqueNativo() {
+      // MainActivity envia este evento sem consumir o toque original.
+      // Também detecta toques dentro de iframes de outros domínios.
+      revelarBotaoVoltar();
+    }
+
+    document.addEventListener("fullscreenchange", atualizarEstadoTelaCheia);
+    document.addEventListener("webkitfullscreenchange", atualizarEstadoTelaCheia);
+    window.addEventListener("maninho-native-touch", receberToqueNativo);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", atualizarEstadoTelaCheia);
+      document.removeEventListener("webkitfullscreenchange", atualizarEstadoTelaCheia);
+      window.removeEventListener("maninho-native-touch", receberToqueNativo);
+      atualizarClasseTelaCheia(false);
+
+      if (Capacitor.isNativePlatform()) {
+        ImmersiveMode.setEnabled({ enabled: false }).catch(() => {});
+        ImmersiveMode.setOrientation({ orientation: "unspecified" }).catch(() => {});
+      } else {
+        ajustarOrientacaoTelaCheia(false);
+      }
+    };
+  }, []);
+
+  // Mostra o botão ao entrar e esconde após 3 segundos sem interação.
+  useEffect(() => {
+    if (temporizadorVoltarRef.current) {
+      window.clearTimeout(temporizadorVoltarRef.current);
+      temporizadorVoltarRef.current = null;
+    }
+
+    if (!telaCheia) {
+      setMostrarBotaoVoltar(true);
+      return undefined;
+    }
+
+    setMostrarBotaoVoltar(true);
+    temporizadorVoltarRef.current = window.setTimeout(() => {
+      setMostrarBotaoVoltar(false);
+      temporizadorVoltarRef.current = null;
+    }, 3000);
+
+    return () => {
+      if (temporizadorVoltarRef.current) {
+        window.clearTimeout(temporizadorVoltarRef.current);
+        temporizadorVoltarRef.current = null;
+      }
+    };
+  }, [telaCheia]);
+
+  function revelarBotaoVoltar() {
+    if (!telaCheiaRef.current) return;
+
+    setMostrarBotaoVoltar(true);
+
+    if (temporizadorVoltarRef.current) {
+      window.clearTimeout(temporizadorVoltarRef.current);
+    }
+
+    temporizadorVoltarRef.current = window.setTimeout(() => {
+      setMostrarBotaoVoltar(false);
+      temporizadorVoltarRef.current = null;
+    }, 3000);
+  }
+
+  async function alternarTelaCheia() {
+    const elemento = playerRef.current;
+    if (!elemento) return;
+
+    try {
+      // No Android, não dependemos da Fullscreen API do WebView.
+      // O player é expandido pelo CSS e as barras são controladas nativamente.
+      if (Capacitor.isNativePlatform()) {
+        const novoEstado = !telaCheia;
+
+        if (novoEstado) {
+          telaCheiaRef.current = true;
+          setTelaCheia(true);
+          atualizarClasseTelaCheia(true);
+          await ajustarOrientacaoTelaCheia(true);
+          await ajustarBarrasAndroid(true);
+        } else {
+          telaCheiaRef.current = false;
+          setTelaCheia(false);
+          atualizarClasseTelaCheia(false);
+          await ajustarBarrasAndroid(false);
+          await ajustarOrientacaoTelaCheia(false);
+        }
+
+        return;
+      }
+
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+
+        telaCheiaRef.current = false;
+        setTelaCheia(false);
+        atualizarClasseTelaCheia(false);
+        await ajustarOrientacaoTelaCheia(false);
+        return;
+      }
+
+      if (elemento.requestFullscreen) {
+        await elemento.requestFullscreen();
+        await ajustarOrientacaoTelaCheia(true);
+      } else if (elemento.webkitRequestFullscreen) {
+        elemento.webkitRequestFullscreen();
+        await ajustarOrientacaoTelaCheia(true);
+      } else {
+        window.alert("A tela cheia não é compatível com este navegador.");
+      }
+    } catch (error) {
+      console.error("Não foi possível alterar a tela cheia:", error);
+      window.alert("Não foi possível ativar a tela cheia neste dispositivo.");
+    }
+  }
 
   useEffect(() => {
     carregarCanais();
@@ -901,14 +1106,6 @@ export default function App() {
     }, 50);
   }
 
-  function abrirCanalNovaAba(canal) {
-    if (!canal.url) {
-      window.alert("Este canal ainda não possui um link cadastrado.");
-      return;
-    }
-
-    window.open(canal.url, "_blank", "noopener,noreferrer");
-  }
 
   function explorarCanais() {
     setCategoria("Todos");
@@ -916,6 +1113,22 @@ export default function App() {
     setSelecionado(null);
     setMostrarPainel(false);
     setMostrarLogin(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function navegarParaCategoria(novaCategoria) {
+    setCategoria(novaCategoria);
+    setBusca("");
+    setSelecionado(null);
+    setMostrarPainel(false);
+    setMostrarLogin(false);
+
+    window.setTimeout(() => {
+      document.getElementById("lista-canais")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }, 80);
   }
 
   // ==========================================
@@ -1000,32 +1213,24 @@ export default function App() {
             }}
           />
 
-          <span>MANINHO</span> TV
+          <span className="marca-maninho">MANINHO</span><strong className="marca-tv">TV</strong>
         </div>
 
-        <nav>
+        <nav className="menu-principal">
           <button onClick={explorarCanais}>
             Início
           </button>
 
           <button
-            onClick={() => {
-              setCategoria("TV");
-              setBusca("");
-              setMostrarPainel(false);
-              setMostrarLogin(false);
-            }}
+            className={categoria === "TV" ? "ativo" : ""}
+            onClick={() => navegarParaCategoria("TV")}
           >
             Canais
           </button>
 
           <button
-            onClick={() => {
-              setCategoria("Esportes");
-              setBusca("");
-              setMostrarPainel(false);
-              setMostrarLogin(false);
-            }}
+            className={categoria === "Esportes" ? "ativo" : ""}
+            onClick={() => navegarParaCategoria("Esportes")}
           >
             Esportes
           </button>
@@ -1353,28 +1558,36 @@ export default function App() {
             <div className="canal-acoes">
               <h2>{selecionado.nome}</h2>
 
-              {selecionado.url && (
-                <a
-                  className="abrir-canal"
-                  href={selecionado.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  ↗ ABRIR CANAL EM NOVA ABA
-                </a>
-              )}
             </div>
           )}
 
-          <div className="player">
+          <div
+            className={`player ${telaCheia ? "player-imersivo" : ""}`}
+            ref={playerRef}
+            onPointerMove={revelarBotaoVoltar}
+            onTouchStart={revelarBotaoVoltar}
+            style={{
+              position: "relative",
+              overflow: "hidden",
+              background: "#050505"
+            }}
+          >
 
             {selecionado?.url ? (
               <iframe
                 key={selecionado.id}
                 src={selecionado.url}
                 title={selecionado.nome}
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                 allowFullScreen
                 referrerPolicy="strict-origin-when-cross-origin"
+                style={{
+                  display: "block",
+                  width: "100%",
+                  height: "100%",
+                  minHeight: "300px",
+                  border: "0"
+                }}
               />
             ) : (
               <div className="player-info">
@@ -1394,16 +1607,58 @@ export default function App() {
               </div>
             )}
 
+            <div
+              className="player-marca"
+              aria-label="Marca d’água MANINHO TV"
+              style={{
+                position: "absolute",
+                left: "14px",
+                bottom: "14px",
+                zIndex: 20,
+                pointerEvents: "none",
+                fontWeight: 900,
+                fontSize: "clamp(15px, 2.5vw, 22px)",
+                letterSpacing: "1px",
+                color: "#ff3038",
+                textShadow: "0 2px 6px #000, 0 0 4px #000",
+                userSelect: "none"
+              }}
+            >
+              <span className="marca-maninho">MANINHO</span> <strong className="marca-tv">TV</strong>
+            </div>
+
+            {telaCheia && mostrarBotaoVoltar && (
+              <button
+                type="button"
+                className="player-botao-voltar"
+                onClick={alternarTelaCheia}
+                aria-label="Voltar e sair da tela cheia"
+              >
+                ↙ VOLTAR
+              </button>
+            )}
+
+          </div>
+
+          <div className="player-controles">
+            <button
+              type="button"
+              className="player-botao-tela-cheia"
+              onClick={alternarTelaCheia}
+              aria-label={telaCheia ? "Sair da tela cheia" : "Ativar tela cheia"}
+            >
+              {telaCheia ? "⛶ SAIR DA TELA CHEIA" : "⛶ TELA CHEIA"}
+            </button>
           </div>
         </section>
 
         {/* LISTA DE CANAIS */}
 
-        <section className="conteudo">
+        <section className="conteudo" id="lista-canais">
 
           <div className="titulo">
             <div>
-              <h2>Explore os canais</h2>
+              <h2>{categoria === "TV" ? "Canais de TV" : categoria === "Esportes" ? "Canais de Esportes" : "Explore os canais"}</h2>
               <p>Escolha o que deseja assistir</p>
             </div>
           </div>
@@ -1497,30 +1752,6 @@ export default function App() {
                     ▶ ASSISTIR AGORA
                   </button>
 
-                  <button
-                    type="button"
-                    className="botao-nova-aba-card"
-                    onClick={() => abrirCanalNovaAba(canal)}
-                    disabled={!canal.url}
-                    title={
-                      !canal.url
-                        ? "Canal sem link cadastrado"
-                        : "Abrir em outra aba"
-                    }
-                    style={{
-                      width: "100%",
-                      padding: "11px",
-                      border: "1px solid #00aaff",
-                      borderRadius: "8px",
-                      background: "#192638",
-                      color: "#fff",
-                      fontWeight: "bold",
-                      cursor: canal.url ? "pointer" : "not-allowed",
-                      opacity: canal.url ? 1 : 0.5
-                    }}
-                  >
-                    ↗ ABRIR EM OUTRA ABA
-                  </button>
 
                 </div>
               </div>
@@ -2394,7 +2625,7 @@ export default function App() {
             }}
           />
 
-          <span>MANINHO</span> TV
+          <span className="marca-maninho">MANINHO</span><strong className="marca-tv">TV</strong>
 
         </div>
 

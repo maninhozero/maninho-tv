@@ -64,7 +64,7 @@ select:focus-visible {
 }
 
 /* =========================================================
-   CABEÇALHO E MENU
+   CABEÇALHO E MENU — DESIGN ATUALIZADO
 ========================================================= */
 
 .topo {
@@ -73,14 +73,15 @@ select:focus-visible {
   z-index: 100;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
   width: 100%;
-  min-height: 76px;
-  padding: 12px 5%;
-  background: rgba(8, 9, 13, .94);
-  border-bottom: 1px solid rgba(232,184,62,.25);
-  box-shadow: 0 8px 30px rgba(0,0,0,.3);
+  min-height: 78px;
+  padding: 13px 4%;
+  background: rgba(8, 9, 13, .97);
+  border-bottom: 1px solid rgba(232,184,62,.3);
+  box-shadow: 0 8px 30px rgba(0,0,0,.4);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
@@ -88,46 +89,55 @@ select:focus-visible {
 .menu-principal {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
-  gap: 9px;
+  gap: 10px;
 }
 
 .topo nav.menu-principal button {
   position: relative;
-  padding: 11px 17px;
-  border: 1px solid rgba(232,184,62,.24);
-  border-radius: 10px;
-  background: linear-gradient(145deg, #171920, #101116);
-  color: #e9e9ec;
-  font-size: 13px;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 43px;
+  padding: 11px 19px !important;
+  border: 1px solid rgba(232,184,62,.35) !important;
+  border-radius: 11px !important;
+  background: linear-gradient(145deg, #191b23, #101116) !important;
+  color: var(--dourado-claro) !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  white-space: nowrap;
   cursor: pointer;
-  transition: .25s ease;
+  transition: all .25s ease;
 }
 
 .topo nav.menu-principal button:hover {
-  color: var(--dourado-claro);
-  border-color: var(--dourado);
-  background: #242018;
+  color: #ffffff !important;
+  border-color: var(--vermelho) !important;
+  background: linear-gradient(135deg, #a91420, #ed3030) !important;
+  box-shadow: 0 6px 18px rgba(237,48,48,.25);
   transform: translateY(-2px);
 }
 
 .topo nav.menu-principal button.ativo {
-  color: #fff;
-  border-color: var(--vermelho);
-  background: linear-gradient(135deg, #ed3030, #99151e);
-  box-shadow: 0 5px 18px rgba(237,48,48,.25);
+  color: #ffffff !important;
+  border-color: #ff6464 !important;
+  background: linear-gradient(135deg, #ed3030, #a91420) !important;
+  box-shadow: 0 5px 18px rgba(237,48,48,.3);
 }
 
-.status {
+.topo .status {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   flex-shrink: 0;
   color: #7ee6a1;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 1px;
+  white-space: nowrap;
 }
 
 .bolinha {
@@ -1066,8 +1076,8 @@ footer p {
   }
 
   .topo nav.menu-principal button {
-    padding: 10px 12px;
-    font-size: 12px;
+    padding: 10px 12px !important;
+    font-size: 12px !important;
   }
 
   .destaque {
@@ -1093,46 +1103,42 @@ footer p {
 
   .topo {
     position: sticky;
-    display: block;
-    padding: 10px 10px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+    padding: 12px 10px;
   }
 
   .menu-principal {
-    display: flex;
-    flex-wrap: nowrap;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
     width: 100%;
-    padding: 3px 1px 9px;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--dourado) transparent;
-  }
-
-  .menu-principal::-webkit-scrollbar {
-    height: 3px;
-  }
-
-  .menu-principal::-webkit-scrollbar-thumb {
-    border-radius: 5px;
-    background: var(--dourado);
+    padding: 3px 1px;
   }
 
   .topo nav.menu-principal button {
-    flex-shrink: 0;
-    padding: 10px 13px;
-    font-size: 11px;
-    white-space: nowrap;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 5px !important;
+    font-size: 11px !important;
+    text-align: center;
+  }
+
+  .topo nav.menu-principal button:hover {
+    transform: none;
   }
 
   .topo nav.menu-principal button.ativo {
-    transform: none;
     box-shadow: 0 4px 14px rgba(237,48,48,.22);
   }
 
-  .status {
-    justify-content: flex-end;
-    margin-top: 2px;
-    font-size: 9px;
+  .topo .status {
+    justify-content: center;
+    margin-top: 3px;
+    font-size: 10px;
   }
 
   .destaque {
@@ -1331,4 +1337,529 @@ footer p {
 ::selection {
   background: var(--vermelho);
   color: #fff;
+}
+
+/* =========================================================
+   PROTEÇÃO FINAL DAS CORES DO MENU
+========================================================= */
+
+.topo nav.menu-principal button,
+.topo nav.menu-principal button span {
+  color: var(--dourado-claro) !important;
+}
+
+.topo nav.menu-principal button:hover,
+.topo nav.menu-principal button:hover span {
+  color: #ffffff !important;
+}
+
+.topo nav.menu-principal button.ativo,
+.topo nav.menu-principal button.ativo span {
+  color: #ffffff !important;
+}
+
+
+/* =========================================================
+   MANINHO TV — REFINAMENTO VISUAL 2026
+   Complementa o tema existente sem remover estilos/funcionalidades.
+========================================================= */
+
+.topo {
+  justify-content: space-between;
+  padding: 12px clamp(16px, 4vw, 58px);
+}
+
+.topo .logo,
+footer .logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #fff;
+  font-size: 21px;
+  font-weight: 950;
+  letter-spacing: .5px;
+  white-space: nowrap;
+}
+
+.topo .logo span,
+footer .logo span {
+  color: var(--dourado-claro);
+}
+
+.topo nav.menu-principal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.destaque {
+  position: relative;
+  isolation: isolate;
+  margin: clamp(18px, 3vw, 38px) clamp(14px, 4vw, 58px);
+  max-width: none;
+  min-height: 360px;
+  border-color: rgba(255, 215, 117, .35);
+  background:
+    radial-gradient(circle at 82% 45%, rgba(237,48,48,.25), transparent 28%),
+    radial-gradient(circle at 15% 100%, rgba(232,184,62,.16), transparent 38%),
+    linear-gradient(115deg, #191b24 0%, #0b0c11 72%);
+}
+
+.destaque h1 span {
+  color: var(--dourado-claro);
+  text-shadow: 0 4px 24px rgba(232,184,62,.18);
+}
+
+.conteudo,
+.agenda-jogos,
+.player-area {
+  width: min(100% - 28px, 1400px);
+  max-width: 1400px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.grade {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 20px;
+}
+
+.conteudo .grade > .card:not(.jogo-card) {
+  min-height: 245px;
+  padding: 22px 18px 18px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(232,184,62,.10), transparent 48%),
+    linear-gradient(150deg, #1b1e28, #0e1016 78%);
+  border: 1px solid rgba(232,184,62,.19);
+}
+
+.conteudo .grade > .card:not(.jogo-card):hover {
+  border-color: rgba(237,48,48,.75);
+  box-shadow: 0 16px 36px rgba(0,0,0,.38), 0 0 0 1px rgba(237,48,48,.12);
+}
+
+.card-icone {
+  width: 104px;
+  height: 104px;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #090a0e, #20232d);
+  box-shadow: inset 0 0 22px rgba(255,255,255,.035), 0 8px 22px rgba(0,0,0,.25);
+}
+
+.card-icone img {
+  width: 82% !important;
+  height: 82% !important;
+  max-width: 82%;
+  max-height: 82%;
+}
+
+.card-categoria {
+  border-color: rgba(237,48,48,.35);
+  background: rgba(237,48,48,.10);
+  color: #ffaaaa;
+  letter-spacing: .6px;
+}
+
+.acoes-canal-card button,
+.botao-assistir-card {
+  min-height: 43px;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, #ed3030, #a91420) !important;
+  color: #fff !important;
+  font-weight: 900 !important;
+  letter-spacing: .3px;
+}
+
+
+.player-area {
+  scroll-margin-top: 100px;
+}
+
+.player {
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 220px;
+  border: 1px solid rgba(255,215,117,.42);
+  box-shadow: 0 18px 50px rgba(0,0,0,.5), 0 0 28px rgba(232,184,62,.07);
+}
+
+.player iframe {
+  position: relative;
+  z-index: 1;
+}
+
+.player-marca {
+  position: absolute;
+  right: 14px;
+  bottom: 13px;
+  z-index: 100001;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 8px;
+  background: rgba(5,6,9,.82);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: .8px;
+  text-shadow: 0 2px 5px #000;
+  pointer-events: none;
+  user-select: none;
+}
+
+.player-marca strong {
+  color: #ff5555;
+}
+
+.player-imersivo .player-marca {
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 100002;
+}
+
+.pesquisa {
+  border-color: rgba(232,184,62,.3);
+  background: #11141c;
+}
+
+.painel-admin {
+  border-color: rgba(232,184,62,.38);
+  background: linear-gradient(145deg, #191c25, #0b0d12);
+}
+
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 26px clamp(18px, 5vw, 70px);
+  border-top: 1px solid rgba(232,184,62,.2);
+  background: #08090d;
+}
+
+footer p {
+  margin: 0;
+  color: var(--texto-fraco);
+  font-size: 12px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .topo {
+    position: relative;
+    justify-content: center;
+  }
+  .topo nav.menu-principal {
+    width: 100%;
+  }
+  .destaque {
+    min-height: 300px;
+    padding: 42px 5%;
+  }
+  .icone-tv {
+    width: 130px;
+    height: 130px;
+    font-size: 65px;
+  }
+}
+
+@media (max-width: 600px) {
+  .topo {
+    gap: 12px;
+    padding: 14px 12px;
+  }
+  .topo .logo {
+    font-size: 19px;
+  }
+  .topo nav.menu-principal {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .topo nav.menu-principal button {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 8px !important;
+    font-size: 11px !important;
+  }
+  .topo .status {
+    width: 100%;
+  }
+  .destaque {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    min-height: 0;
+    margin: 14px;
+    padding: 30px 22px;
+    border-radius: 19px;
+  }
+  .destaque p {
+    font-size: 14px;
+  }
+  .icone-tv {
+    align-self: center;
+    width: 100px;
+    height: 100px;
+    border-radius: 23px;
+    font-size: 52px;
+  }
+  .conteudo,
+  .agenda-jogos,
+  .player-area {
+    width: calc(100% - 28px);
+    margin-top: 36px;
+    margin-bottom: 36px;
+  }
+  .grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+  }
+  .conteudo .grade > .card:not(.jogo-card) {
+    min-height: 215px;
+    padding: 16px 10px 12px;
+  }
+  .card-icone {
+    width: 76px;
+    height: 76px;
+    border-radius: 17px;
+  }
+  .card h3 {
+    font-size: 14px;
+  }
+  .card-categoria {
+    font-size: 9px;
+  }
+  .player {
+    min-height: 190px;
+    border-radius: 12px;
+  }
+  .player-marca {
+    right: 8px;
+    bottom: 8px;
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+  .player-info h2 {
+    font-size: 19px;
+  }
+  .player-info p {
+    font-size: 12px;
+  }
+  .painel-admin {
+    padding: 20px 15px;
+  }
+  footer {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 360px) {
+  .grade {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   MANINHO TV — CORES DA MARCA E CONTROLES DO PLAYER
+========================================================= */
+
+.topo .logo .marca-maninho,
+footer .logo .marca-maninho,
+.player-marca .marca-maninho {
+  color: #ff3038 !important;
+}
+
+.topo .logo .marca-tv,
+footer .logo .marca-tv,
+.player-marca .marca-tv {
+  color: #ffd700 !important;
+  font-weight: 950;
+}
+
+.topo .logo .marca-tv,
+footer .logo .marca-tv {
+  margin-left: -5px;
+}
+
+.player-marca {
+  left: 14px !important;
+  right: auto !important;
+  bottom: 14px !important;
+  z-index: 100002 !important;
+  display: inline-flex !important;
+  gap: 4px;
+  padding: 7px 10px !important;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 7px;
+  background: rgba(0,0,0,.78) !important;
+  color: #fff !important;
+  font-size: clamp(13px, 2vw, 19px) !important;
+  font-weight: 950 !important;
+  letter-spacing: .8px;
+  text-shadow: 0 2px 6px #000;
+  pointer-events: none;
+}
+
+.player-controles {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 14px 0 0;
+}
+
+.player-botao-tela-cheia {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 210px;
+  min-height: 48px;
+  padding: 12px 22px;
+  border: 1px solid rgba(255,215,0,.55) !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, #ed3030, #a91420) !important;
+  color: #fff !important;
+  font-size: 14px;
+  font-weight: 950;
+  letter-spacing: .5px;
+  cursor: pointer;
+  box-shadow: 0 7px 22px rgba(0,0,0,.3);
+}
+
+.player-botao-tela-cheia:hover,
+.player-botao-voltar:hover {
+  filter: brightness(1.12);
+}
+
+.player:fullscreen,
+.player:-webkit-full-screen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  display: block !important;
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  aspect-ratio: auto !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #000 !important;
+}
+
+.player:fullscreen iframe,
+.player:-webkit-full-screen iframe {
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+.player-botao-voltar {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  left: max(14px, env(safe-area-inset-left));
+  z-index: 100005;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 10px 18px;
+  border: 1px solid rgba(255,255,255,.45) !important;
+  border-radius: 9px !important;
+  background: rgba(150,15,25,.96) !important;
+  color: #fff !important;
+  font-size: 14px;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 5px 20px rgba(0,0,0,.45);
+}
+
+@media (max-width: 600px) {
+  .player-controles { margin-top: 12px; }
+  .player-botao-tela-cheia { width: 100%; min-height: 50px; }
+  .player-botao-voltar { min-height: 48px; padding: 11px 17px; }
+  .player-marca { left: 9px !important; bottom: 9px !important; }
+}
+
+/* NAVEGACAO DIRETA PARA AS CATEGORIAS */
+#lista-canais {
+  scroll-margin-top: 24px;
+}
+
+@media (max-width: 700px) {
+  #lista-canais {
+    scroll-margin-top: 12px;
+  }
+}
+
+
+/* TELA CHEIA — PLAYER OCUPA TODO O VISOR */
+.player.player-imersivo {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  display: block !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-width: 100vw !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  aspect-ratio: auto !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #000 !important;
+  box-shadow: none !important;
+}
+
+.player.player-imersivo iframe {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+html.modo-tela-cheia,
+body.modo-tela-cheia {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+
+/* O botão flutuante continua interativo acima do iframe em modo imersivo. */
+.player.player-imersivo .player-botao-voltar {
+  z-index: 100005 !important;
+  pointer-events: auto !important;
+  touch-action: manipulation;
 }
