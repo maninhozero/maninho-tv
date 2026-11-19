@@ -1863,3 +1863,141 @@ body.modo-tela-cheia {
   pointer-events: auto !important;
   touch-action: manipulation;
 }
+
+
+/* =========================================================
+   ESCOLHA ENTRE SERVIDOR 1 E SERVIDOR 2
+========================================================= */
+
+.servidor-modal-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, .82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.servidor-modal {
+  position: relative;
+  width: min(100%, 440px);
+  padding: 30px 24px;
+  border: 1px solid rgba(232, 184, 62, .5);
+  border-radius: 20px;
+  background: linear-gradient(145deg, #1b1d26, #0b0c11);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, .65);
+  text-align: center;
+}
+
+.servidor-modal-fechar {
+  position: absolute;
+  top: 10px;
+  right: 13px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 50%;
+  background: #242630;
+  color: #fff;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.servidor-modal-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(232, 184, 62, .45);
+  border-radius: 18px;
+  background: rgba(232, 184, 62, .1);
+  font-size: 34px;
+}
+
+.servidor-modal h2 {
+  margin: 4px 0 8px;
+  color: #ffd875;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.servidor-modal > p {
+  margin: 0 0 22px;
+  color: #c7c9d1;
+  overflow-wrap: anywhere;
+}
+
+.servidor-opcoes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.servidor-opcoes button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 100px;
+  padding: 16px 10px;
+  border: 1px solid rgba(232, 184, 62, .5);
+  border-radius: 13px;
+  background: linear-gradient(145deg, #292116, #171820);
+  color: #fff;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.servidor-opcoes button:hover {
+  border-color: #ed3030;
+  background: linear-gradient(135deg, #a91420, #ed3030);
+  transform: translateY(-3px);
+}
+
+.servidor-opcoes button strong {
+  color: #ffd875;
+  font-size: 14px;
+}
+
+.servidor-opcoes button:hover strong {
+  color: #fff;
+}
+
+.servidor-opcoes button small {
+  color: #c7c9d1;
+  font-size: 11px;
+}
+
+.servidor-opcoes button:hover small {
+  color: #fff;
+}
+
+.servidor-sem-link {
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(237, 48, 48, .1);
+  color: #ff9999 !important;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .servidor-modal {
+    padding: 26px 17px;
+  }
+
+  .servidor-opcoes {
+    grid-template-columns: 1fr;
+  }
+
+  .servidor-opcoes button {
+    min-height: 76px;
+  }
+}

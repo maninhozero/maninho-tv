@@ -17,7 +17,8 @@ const formularioVazio = {
   nome: "",
   categoria: "TV",
   logo_url: "",
-  stream_url: ""
+  stream_url: "",
+  stream_url_2: ""
 };
 
 const formularioJogoVazio = {
@@ -107,6 +108,7 @@ export default function App() {
   const [categoria, setCategoria] = useState("Todos");
   const [busca, setBusca] = useState("");
   const [selecionado, setSelecionado] = useState(null);
+  const [mostrarEscolhaServidor, setMostrarEscolhaServidor] = useState(false);
 
   // CONTROLES DO PLAYER E TELA CHEIA
   const playerRef = useRef(null);
@@ -719,7 +721,8 @@ export default function App() {
       nome: canal.nome || "",
       categoria: canal.categoria || "TV",
       logo_url: canal.logo_url || "",
-      stream_url: canal.stream_url || ""
+      stream_url: canal.stream_url || "",
+      stream_url_2: canal.stream_url_2 || ""
     });
 
     setMensagem("");
@@ -750,13 +753,24 @@ export default function App() {
       return;
     }
 
+    for (const [rotulo, endereco] of [
+      ["Servidor 1", formulario.stream_url],
+      ["Servidor 2", formulario.stream_url_2]
+    ]) {
+      if (endereco.trim() && !/^https?:\/\//i.test(endereco.trim())) {
+        setMensagem(`O link do ${rotulo} precisa começar com http:// ou https://.`);
+        return;
+      }
+    }
+
     setSalvando(true);
 
     const dados = {
       nome: formulario.nome.trim(),
       categoria: formulario.categoria,
       logo_url: formulario.logo_url.trim() || null,
-      stream_url: formulario.stream_url.trim() || null
+      stream_url: formulario.stream_url.trim() || null,
+      stream_url_2: formulario.stream_url_2.trim() || null
     };
 
     let resultado;
@@ -1057,7 +1071,9 @@ export default function App() {
     nome: canal.nome,
     categoria: canal.categoria,
     icone: canal.logo_url || "📺",
-    url: canal.stream_url || "",
+    url: "",
+    stream1: canal.stream_url || "",
+    stream2: canal.stream_url_2 || "",
     online: true
   }));
 
@@ -1096,7 +1112,8 @@ export default function App() {
   const urlVideoTutorial = obterUrlVideo(configSite.tutorial_url);
 
   function assistirCanal(canal) {
-    setSelecionado(canal);
+    setSelecionado({ ...canal, url: "" });
+    setMostrarEscolhaServidor(true);
 
     window.setTimeout(() => {
       document.querySelector(".player-area")?.scrollIntoView({
@@ -1106,11 +1123,28 @@ export default function App() {
     }, 50);
   }
 
+  function escolherServidor(numero) {
+    if (!selecionado) return;
+    const endereco = numero === 2
+      ? selecionado.stream2
+      : selecionado.stream1;
+
+    if (!endereco) return;
+
+    setSelecionado((anterior) => ({
+      ...anterior,
+      url: endereco,
+      servidorEscolhido: numero
+    }));
+    setMostrarEscolhaServidor(false);
+  }
+
 
   function explorarCanais() {
     setCategoria("Todos");
     setBusca("");
     setSelecionado(null);
+    setMostrarEscolhaServidor(false);
     setMostrarPainel(false);
     setMostrarLogin(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1120,6 +1154,7 @@ export default function App() {
     setCategoria(novaCategoria);
     setBusca("");
     setSelecionado(null);
+    setMostrarEscolhaServidor(false);
     setMostrarPainel(false);
     setMostrarLogin(false);
 
@@ -1518,9 +1553,9 @@ export default function App() {
                     <button
                       type="button"
                       className="botao-assistir-card"
-                      disabled={!canal?.stream_url}
+                      disabled={!canal?.stream_url && !canal?.stream_url_2}
                       onClick={() => {
-                        if (!canal?.stream_url) return;
+                        if (!canal?.stream_url && !canal?.stream_url_2) return;
 
                         assistirCanal({
                           id: `online-${canal.id}`,
@@ -1528,7 +1563,8 @@ export default function App() {
                           nome: canal.nome,
                           categoria: canal.categoria,
                           icone: canal.logo_url || "📺",
-                          url: canal.stream_url,
+                          stream1: canal.stream_url || "",
+                          stream2: canal.stream_url_2 || "",
                           online: true
                         });
                       }}
@@ -1549,6 +1585,46 @@ export default function App() {
           )}
 
         </section>
+
+        {/* ESCOLHA DO SERVIDOR */}
+
+        {mostrarEscolhaServidor && selecionado && (
+          <div className="servidor-modal-fundo" role="dialog" aria-modal="true" aria-labelledby="titulo-escolha-servidor">
+            <div className="servidor-modal">
+              <button
+                type="button"
+                className="servidor-modal-fechar"
+                onClick={() => {
+                  setMostrarEscolhaServidor(false);
+                  setSelecionado(null);
+                }}
+                aria-label="Fechar"
+              >
+                ×
+              </button>
+              <span className="servidor-modal-icone">📺</span>
+              <h2 id="titulo-escolha-servidor">Onde deseja assistir?</h2>
+              <p>{selecionado.nome}</p>
+              <div className="servidor-opcoes">
+                {selecionado.stream1 && (
+                  <button type="button" onClick={() => escolherServidor(1)}>
+                    <strong>▶ SERVIDOR 1</strong>
+                    <small>Opção principal</small>
+                  </button>
+                )}
+                {selecionado.stream2 && (
+                  <button type="button" onClick={() => escolherServidor(2)}>
+                    <strong>▶ SERVIDOR 2</strong>
+                    <small>Opção alternativa</small>
+                  </button>
+                )}
+              </div>
+              {!selecionado.stream1 && !selecionado.stream2 && (
+                <p className="servidor-sem-link">Este canal ainda não possui links de transmissão cadastrados.</p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* PLAYER */}
 
@@ -1575,7 +1651,7 @@ export default function App() {
 
             {selecionado?.url ? (
               <iframe
-                key={selecionado.id}
+                key={`${selecionado.id}-${selecionado.servidorEscolhido || 1}`}
                 src={selecionado.url}
                 title={selecionado.nome}
                 allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
@@ -2079,10 +2155,23 @@ export default function App() {
 
                 <input
                   name="stream_url"
+                  type="url"
                   value={formulario.stream_url}
                   onChange={atualizarFormulario}
                   placeholder="https://..."
                 />
+
+                <label>Link da transmissão — Servidor 2 (opcional)</label>
+                <input
+                  name="stream_url_2"
+                  type="url"
+                  value={formulario.stream_url_2}
+                  onChange={atualizarFormulario}
+                  placeholder="https://..."
+                />
+                <small style={{ display: "block", opacity: 0.7, margin: "-4px 0 14px" }}>
+                  O usuário poderá escolher entre os dois servidores ao abrir o canal.
+                </small>
 
                 <button
                   className="botao"
