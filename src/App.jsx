@@ -1082,7 +1082,7 @@ export default function App() {
   const filtrados = todosCanais.filter((canal) => {
     const combinaCategoria =
       categoria === "Todos" ||
-      canal.categoria.toLowerCase() === categoria.toLowerCase();
+      String(canal.categoria || "").trim().toLowerCase() === categoria.trim().toLowerCase();
 
     const combinaBusca = canal.nome
       .toLowerCase()
@@ -1098,7 +1098,7 @@ export default function App() {
 
     const categoriaCombina =
       categoriaAdmin === "Todos" ||
-      canal.categoria === categoriaAdmin;
+      String(canal.categoria || "").trim().toLowerCase() === categoriaAdmin.trim().toLowerCase();
 
     return nomeCombina && categoriaCombina;
   });
@@ -1252,35 +1252,20 @@ export default function App() {
         </div>
 
         <nav className="menu-principal">
-          <button onClick={explorarCanais}>
-            Início
-          </button>
-
-          <button
-            className={categoria === "TV" ? "ativo" : ""}
-            onClick={() => navegarParaCategoria("TV")}
-          >
-            Canais
-          </button>
-
-          <button
-            className={categoria === "Esportes" ? "ativo" : ""}
-            onClick={() => navegarParaCategoria("Esportes")}
-          >
-            Esportes
-          </button>
-
-          <button onClick={irParaDoacoes}>
-            ❤️ Apoie o site
-          </button>
-
-          <button
-            type="button"
-            onClick={abrirAcessoAdmin}
-          >
-            {administrador
-              ? "⚙️ Painel ADM"
-              : "🔐 Área ADM"}
+          <button onClick={explorarCanais}>⌂ Início</button>
+          {["Filmes", "Séries", "Desenhos", "TV", "Esportes"].map((item) => (
+            <button
+              key={item}
+              className={categoria === item ? "ativo" : ""}
+              onClick={() => navegarParaCategoria(item)}
+            >
+              {item === "Filmes" ? "🎬 " : item === "Séries" ? "🎭 " : item === "Desenhos" ? "🐉 " : item === "TV" ? "📺 " : "⚽ "}
+              {item}
+            </button>
+          ))}
+          <button onClick={irParaDoacoes}>❤️ Apoie</button>
+          <button type="button" className="botao-menu-admin" onClick={abrirAcessoAdmin}>
+            {administrador ? "👑 Painel ADM" : "🔐 Área ADM"}
           </button>
         </nav>
 
@@ -1288,6 +1273,44 @@ export default function App() {
           <span className="bolinha"></span> ONLINE
         </div>
       </header>
+
+      <nav className="categorias-destaque" aria-label="Categorias do MANINHO TV">
+        {[
+          { nome: "Filmes", icone: "🎬", cor: "roxo" },
+          { nome: "Séries", icone: "🎭", cor: "rosa" },
+          { nome: "Desenhos", icone: "🐉", cor: "azul" },
+          { nome: "TV", icone: "📺", cor: "ciano" },
+          { nome: "Esportes", icone: "⚽", cor: "verde" }
+        ].map((item) => (
+          <button
+            type="button"
+            key={item.nome}
+            className={`categoria-destaque-card ${item.cor} ${categoria === item.nome ? "ativo" : ""}`}
+            onClick={() => navegarParaCategoria(item.nome)}
+          >
+            {item.nome === "TV" ? (
+              <span className="categoria-tv-foto-wrap">
+                <img
+                  className="categoria-tv-foto"
+                  src={logoSite}
+                  alt="MANINHO TV"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+                <span className="categoria-tv-hashtag">#</span>
+              </span>
+            ) : (
+              <span>{item.icone}</span>
+            )}
+            <strong>{item.nome}</strong>
+          </button>
+        ))}
+        <button type="button" className="categoria-destaque-card adm" onClick={abrirAcessoAdmin}>
+          <span>👑</span>
+          <strong>ADM</strong>
+        </button>
+      </nav>
 
       <main>
 
@@ -1734,7 +1757,7 @@ export default function App() {
 
           <div className="titulo">
             <div>
-              <h2>{categoria === "TV" ? "Canais de TV" : categoria === "Esportes" ? "Canais de Esportes" : "Explore os canais"}</h2>
+              <h2>{categoria === "Todos" ? "Explore o conteúdo" : `Categoria ${categoria}`}</h2>
               <p>Escolha o que deseja assistir</p>
             </div>
           </div>
@@ -1747,7 +1770,7 @@ export default function App() {
           />
 
           <div className="filtros">
-            {["Todos", "TV", "Esportes"].map((item) => (
+            {["Todos", "Filmes", "Séries", "Desenhos", "TV", "Esportes"].map((item) => (
               <button
                 key={item}
                 className={categoria === item ? "ativo" : ""}
@@ -2105,6 +2128,9 @@ export default function App() {
                   value={formulario.categoria}
                   onChange={atualizarFormulario}
                 >
+                  <option value="Filmes">Filmes</option>
+                  <option value="Séries">Séries</option>
+                  <option value="Desenhos">Desenhos</option>
                   <option value="TV">TV</option>
                   <option value="Esportes">Esportes</option>
                 </select>
@@ -2219,7 +2245,7 @@ export default function App() {
                 />
 
                 <div className="filtros">
-                  {["Todos", "TV", "Esportes"].map((item) => (
+                  {["Todos", "Filmes", "Séries", "Desenhos", "TV", "Esportes"].map((item) => (
                     <button
                       key={item}
                       type="button"
@@ -2695,6 +2721,15 @@ export default function App() {
         </section>
 
       </main>
+
+      <nav className="menu-inferior" aria-label="Navegação inferior">
+        <button type="button" onClick={explorarCanais}><span>⌂</span>Início</button>
+        <button type="button" className={categoria === "Filmes" ? "ativo" : ""} onClick={() => navegarParaCategoria("Filmes")}><span>🎬</span>Filmes</button>
+        <button type="button" className={categoria === "Séries" ? "ativo" : ""} onClick={() => navegarParaCategoria("Séries")}><span>🎭</span>Séries</button>
+        <button type="button" className={categoria === "Desenhos" ? "ativo" : ""} onClick={() => navegarParaCategoria("Desenhos")}><span>🐉</span>Desenhos</button>
+        <button type="button" className={categoria === "Esportes" ? "ativo" : ""} onClick={() => navegarParaCategoria("Esportes")}><span>🏆</span>Esportes</button>
+        <button type="button" onClick={abrirAcessoAdmin}><span>⚙️</span>ADM</button>
+      </nav>
 
       <footer>
 

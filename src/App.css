@@ -2001,3 +2001,496 @@ body.modo-tela-cheia {
     min-height: 76px;
   }
 }
+
+
+/* =========================================================
+   MANINHO TV — REDESIGN NEON ROXO + AZUL
+   Camada visual adicionada sem alterar os componentes funcionais.
+========================================================= */
+:root {
+  --fundo: #03040c;
+  --fundo-card: #090d20;
+  --fundo-card-2: #10152c;
+  --dourado: #ffe600;
+  --dourado-claro: #fff36b;
+  --vermelho: #d500ff;
+  --vermelho-escuro: #7200c9;
+  --branco: #ffffff;
+  --texto: #d8e4ff;
+  --texto-fraco: #8b9abd;
+  --borda: rgba(0, 174, 255, .42);
+  --sombra: 0 12px 35px rgba(0, 0, 0, .55);
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 10% 5%, rgba(147, 0, 255, .18), transparent 35%),
+    radial-gradient(ellipse at 90% 18%, rgba(0, 149, 255, .14), transparent 38%),
+    #03040c;
+}
+
+.topo {
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba(3, 4, 12, .96);
+  border-bottom: 1px solid rgba(0, 174, 255, .45);
+  box-shadow: 0 5px 28px rgba(0, 0, 0, .6), 0 2px 20px rgba(111, 0, 255, .16);
+}
+
+.topo .logo .marca-maninho,
+footer .logo .marca-maninho {
+  color: #fff !important;
+  text-shadow: 0 0 12px #a000ff;
+}
+.topo .logo .marca-tv,
+footer .logo .marca-tv {
+  color: #00c8ff !important;
+  text-shadow: 0 0 14px #007bff;
+}
+
+.topo nav.menu-principal button {
+  border-color: rgba(0, 174, 255, .48) !important;
+  background: linear-gradient(145deg, #11132d, #080914) !important;
+  color: #e8eaff !important;
+  box-shadow: inset 0 0 12px rgba(99, 0, 255, .1);
+}
+.topo nav.menu-principal button:hover,
+.topo nav.menu-principal button.ativo {
+  border-color: #00c8ff !important;
+  background: linear-gradient(135deg, #a000ff, #006dff) !important;
+  color: #fff !important;
+  box-shadow: 0 0 18px rgba(0, 174, 255, .4), 0 0 20px rgba(174, 0, 255, .3);
+}
+.topo nav.menu-principal .botao-menu-admin {
+  border-color: rgba(255, 225, 0, .75) !important;
+  color: #fff36b !important;
+}
+.topo .status { color: #7effd1; }
+
+.categorias-destaque {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 13px;
+  width: min(1400px, 94%);
+  margin: 18px auto 0;
+}
+.categoria-destaque-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 0;
+  min-height: 128px;
+  padding: 12px 8px;
+  border: 1px solid #a000ff;
+  border-radius: 19px;
+  background:
+    radial-gradient(circle at 50% 0, rgba(180, 0, 255, .28), transparent 60%),
+    linear-gradient(145deg, #11132c, #050711);
+  color: #fff;
+  cursor: pointer;
+  transition: .22s ease;
+  box-shadow: inset 0 0 16px rgba(153, 0, 255, .12), 0 0 12px rgba(153, 0, 255, .18);
+}
+.categoria-destaque-card span {
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1;
+  filter: drop-shadow(0 0 10px rgba(0, 174, 255, .5));
+}
+.categoria-destaque-card strong {
+  font-size: clamp(11px, 1.3vw, 15px);
+  font-weight: 950;
+  text-transform: uppercase;
+  text-shadow: 0 2px 5px #000;
+}
+.categoria-destaque-card.azul,
+.categoria-destaque-card.ciano { border-color: #00bfff; box-shadow: inset 0 0 16px rgba(0, 174, 255, .13), 0 0 13px rgba(0, 174, 255, .2); }
+.categoria-destaque-card.rosa { border-color: #ff00d4; }
+.categoria-destaque-card.verde { border-color: #00ff91; }
+.categoria-destaque-card.adm { border-color: #ffe600; background: linear-gradient(145deg, #302400, #090711); }
+.categoria-destaque-card:hover,
+.categoria-destaque-card.ativo {
+  transform: translateY(-4px);
+  border-color: #fff;
+  box-shadow: 0 0 10px #00c8ff, 0 0 24px rgba(164, 0, 255, .6), inset 0 0 20px rgba(0, 174, 255, .2);
+}
+
+.destaque {
+  border: 1px solid #00bfff;
+  background:
+    radial-gradient(circle at 82% 48%, rgba(0, 119, 255, .27), transparent 34%),
+    radial-gradient(circle at 15% 100%, rgba(166, 0, 255, .24), transparent 40%),
+    linear-gradient(120deg, #100b2a, #050713 70%);
+  box-shadow: 0 0 18px rgba(0, 174, 255, .25), 0 0 25px rgba(153, 0, 255, .2), var(--sombra);
+}
+.destaque h1 span,
+.destaque-marca strong { color: #00c8ff; text-shadow: 0 0 18px #007bff; }
+.destaque .etiqueta {
+  border-color: #c000ff;
+  background: rgba(153, 0, 255, .2);
+  color: #fff;
+}
+.botao,
+.acoes-canal-card button {
+  border: 1px solid #00c8ff !important;
+  background: linear-gradient(135deg, #a000ff, #005eff) !important;
+  color: #fff !important;
+  box-shadow: 0 0 17px rgba(0, 174, 255, .28);
+}
+.botao:hover:not(:disabled) { box-shadow: 0 0 25px rgba(174, 0, 255, .55); }
+
+.titulo h2,
+.agenda-jogos .titulo h2,
+.painel-admin h2,
+.admin-programacao h2 {
+  color: #f7f7ff;
+  text-shadow: 0 0 12px rgba(0, 174, 255, .35);
+}
+.titulo h2::after,
+.agenda-jogos .titulo h2::after {
+  background: linear-gradient(90deg, #b000ff, #00c8ff);
+}
+.card,
+.jogo-card,
+.painel-admin {
+  border-color: rgba(0, 174, 255, .35);
+  background: linear-gradient(145deg, #11152d, #070914);
+  box-shadow: 0 9px 28px rgba(0, 0, 0, .35), inset 0 0 18px rgba(82, 0, 255, .06);
+}
+.card:hover,
+.jogo-card:hover {
+  border-color: #00c8ff;
+  box-shadow: 0 0 18px rgba(0, 174, 255, .24), 0 12px 30px rgba(0, 0, 0, .4);
+}
+.card-icone {
+  border-color: #a000ff;
+  background: linear-gradient(145deg, #15133a, #050713);
+  color: #00c8ff;
+  box-shadow: 0 0 14px rgba(153, 0, 255, .22);
+}
+.card-categoria {
+  border-color: rgba(0, 174, 255, .4);
+  background: rgba(0, 174, 255, .1);
+  color: #8beaff;
+}
+.filtros button {
+  border-color: rgba(0, 174, 255, .4);
+  background: #0c1022;
+  color: #dceaff;
+}
+.filtros button.ativo {
+  border-color: #00c8ff;
+  background: linear-gradient(135deg, #a000ff, #005eff);
+  box-shadow: 0 0 16px rgba(0, 174, 255, .3);
+}
+.pesquisa,
+.painel-admin input:not([type="checkbox"]),
+.painel-admin select {
+  border-color: rgba(0, 174, 255, .4);
+  background: #080b19;
+}
+.player {
+  border-color: #00c8ff;
+  box-shadow: 0 0 22px rgba(0, 174, 255, .22), 0 15px 45px rgba(0,0,0,.5);
+}
+.player-marca strong { color: #00c8ff !important; }
+.player-botao-tela-cheia {
+  border-color: #00c8ff !important;
+  background: linear-gradient(135deg, #a000ff, #005eff) !important;
+}
+.servidor-modal {
+  border-color: #00c8ff;
+  background: linear-gradient(145deg, #14113a, #070914);
+  box-shadow: 0 0 30px rgba(153, 0, 255, .35);
+}
+.servidor-modal h2 { color: #8beaff; }
+.servidor-opcoes button {
+  border-color: rgba(0, 174, 255, .55);
+  background: linear-gradient(145deg, #19133e, #080b19);
+}
+.servidor-opcoes button strong { color: #8beaff; }
+
+.menu-inferior {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 9990;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 4px;
+  min-height: 78px;
+  padding: 8px max(10px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  border-top: 1px solid rgba(0, 174, 255, .55);
+  background: rgba(3, 5, 17, .96);
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, .55), 0 0 20px rgba(112, 0, 255, .16);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.menu-inferior button {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 58px;
+  padding: 4px 2px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #dceaff;
+  font-size: clamp(9px, 1.8vw, 12px);
+  font-weight: 800;
+  cursor: pointer;
+}
+.menu-inferior button span {
+  font-size: clamp(20px, 4vw, 27px);
+  line-height: 1;
+}
+.menu-inferior button.ativo,
+.menu-inferior button:hover {
+  color: #d66bff;
+  text-shadow: 0 0 12px #a000ff;
+}
+footer { padding-bottom: 100px; }
+
+@media (max-width: 900px) {
+  .topo { justify-content: center; }
+  .topo nav.menu-principal { gap: 7px; }
+  .topo nav.menu-principal button { padding: 9px 12px !important; }
+  .categorias-destaque { gap: 9px; }
+  .categoria-destaque-card { min-height: 105px; }
+}
+@media (max-width: 600px) {
+  .topo { position: relative; padding: 12px 10px; }
+  .topo nav.menu-principal {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    width: 100%;
+    overflow-x: auto;
+    padding: 2px 0 7px;
+    scrollbar-width: none;
+  }
+  .topo nav.menu-principal::-webkit-scrollbar { display: none; }
+  .topo nav.menu-principal button {
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 38px;
+    padding: 9px 12px !important;
+    font-size: 11px !important;
+  }
+  .topo .status { width: auto; }
+  .categorias-destaque {
+    display: flex;
+    width: calc(100% - 20px);
+    gap: 9px;
+    margin-top: 12px;
+    overflow-x: auto;
+    padding: 2px 2px 12px;
+    scrollbar-width: none;
+  }
+  .categorias-destaque::-webkit-scrollbar { display: none; }
+  .categoria-destaque-card {
+    flex: 0 0 112px;
+    min-height: 112px;
+    border-radius: 15px;
+  }
+  .categoria-destaque-card span { font-size: 36px; }
+  .destaque {
+    margin-top: 10px;
+    border-color: #00bfff;
+    box-shadow: 0 0 15px rgba(0, 174, 255, .2), var(--sombra);
+  }
+  .menu-inferior { min-height: 72px; }
+  .menu-inferior button { font-size: 9px; }
+  .menu-inferior button span { font-size: 21px; }
+  footer { padding-bottom: 105px; }
+}
+@media (max-width: 360px) {
+  .menu-inferior button { font-size: 8px; }
+}
+
+
+/* =========================================================
+   CATEGORIA TV — FOTO DO MANINHO COM HASHTAG
+   Usa o mesmo logo.png já utilizado no cabeçalho do site/app.
+========================================================= */
+.categoria-destaque-card .categoria-tv-foto-wrap {
+  position: relative;
+  display: block;
+  width: clamp(58px, 6vw, 76px);
+  height: clamp(58px, 6vw, 76px);
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 2px solid #00c8ff;
+  border-radius: 50%;
+  background: #080914;
+  box-shadow: 0 0 10px rgba(0, 200, 255, .8), 0 0 17px rgba(160, 0, 255, .65);
+  line-height: 1;
+  filter: none;
+}
+.categoria-destaque-card .categoria-tv-foto {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 24%;
+  border-radius: 50%;
+}
+.categoria-destaque-card .categoria-tv-hashtag {
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border: 1px solid rgba(255, 255, 255, .85);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #00d9ff, #075dff);
+  color: #fff;
+  font-size: 23px;
+  font-weight: 1000;
+  line-height: 1;
+  text-shadow: 0 0 8px #003cff;
+  box-shadow: 0 0 12px #00bfff;
+}
+@media (max-width: 700px) {
+  .categoria-destaque-card .categoria-tv-foto-wrap {
+    width: 58px;
+    height: 58px;
+  }
+  .categoria-destaque-card .categoria-tv-hashtag {
+    width: 23px;
+    height: 23px;
+    font-size: 20px;
+  }
+}
+
+/* =========================================================
+   ACABAMENTO FINAL — SITE E APP MANINHO TV
+   Cabeçalho, categorias, banner e navegação neon.
+========================================================= */
+.topo {
+  min-height: 92px;
+  padding: 12px clamp(14px, 3vw, 42px);
+  justify-content: space-between;
+}
+.topo > .logo {
+  flex: 0 0 auto;
+  gap: 7px;
+  font-size: clamp(19px, 2vw, 27px);
+  white-space: nowrap;
+}
+.topo > .logo img {
+  width: 62px !important;
+  height: 62px !important;
+  border: 2px solid #7b2cff;
+  border-radius: 50%;
+  background: #080914;
+  box-shadow: 0 0 12px #a000ff, 0 0 20px rgba(0, 200, 255, .35);
+}
+.topo nav.menu-principal {
+  flex: 1 1 auto;
+  gap: 7px;
+}
+.topo nav.menu-principal button {
+  padding: 10px 12px !important;
+  min-height: 40px;
+  font-size: 12px !important;
+}
+.categorias-destaque {
+  margin-top: 16px;
+  margin-bottom: 18px;
+}
+.categoria-destaque-card {
+  min-height: 136px;
+  border-width: 2px;
+  border-radius: 17px;
+}
+.categoria-destaque-card.roxo {
+  background:
+    radial-gradient(circle at 50% 0, rgba(190, 0, 255, .32), transparent 65%),
+    linear-gradient(145deg, #17102f, #050711);
+}
+.categoria-destaque-card.rosa {
+  background:
+    radial-gradient(circle at 50% 0, rgba(255, 0, 212, .27), transparent 65%),
+    linear-gradient(145deg, #24102b, #050711);
+}
+.categoria-destaque-card.azul,
+.categoria-destaque-card.ciano {
+  background:
+    radial-gradient(circle at 50% 0, rgba(0, 174, 255, .3), transparent 65%),
+    linear-gradient(145deg, #0b1b3b, #050711);
+}
+.categoria-destaque-card.verde {
+  background:
+    radial-gradient(circle at 50% 0, rgba(0, 255, 145, .2), transparent 65%),
+    linear-gradient(145deg, #08251f, #050711);
+}
+.categoria-destaque-card.adm {
+  background:
+    radial-gradient(circle at 50% 0, rgba(255, 214, 0, .25), transparent 65%),
+    linear-gradient(145deg, #2b2108, #050711);
+}
+.destaque {
+  margin-top: 18px;
+  margin-bottom: 28px;
+  border-radius: 23px;
+}
+.destaque .icone-tv {
+  color: #00c8ff;
+  text-shadow: 0 0 14px #007bff, 0 0 30px #a000ff;
+}
+.conteudo,
+.agenda-jogos,
+.player-area {
+  scroll-margin-top: 112px;
+}
+.menu-inferior button.ativo {
+  color: #d66bff;
+  text-shadow: 0 0 12px #a000ff, 0 0 22px rgba(0, 200, 255, .6);
+}
+@media (min-width: 1100px) {
+  .topo { flex-wrap: nowrap; }
+  .topo .status { margin-left: 4px; }
+  .categorias-destaque { width: min(1500px, 94%); }
+  .categoria-destaque-card { min-height: 145px; }
+}
+@media (max-width: 900px) {
+  .topo { flex-wrap: wrap; }
+  .topo > .logo img {
+    width: 54px !important;
+    height: 54px !important;
+  }
+}
+@media (max-width: 600px) {
+  .topo { gap: 10px; }
+  .topo > .logo {
+    justify-content: center;
+    width: 100%;
+  }
+  .categorias-destaque {
+    margin-top: 10px;
+    margin-bottom: 12px;
+  }
+  .categoria-destaque-card {
+    flex-basis: 108px;
+    min-height: 110px;
+    padding: 9px 6px;
+  }
+  .destaque {
+    margin: 12px 12px 22px;
+    padding: 28px 20px;
+  }
+  .menu-inferior {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+}
